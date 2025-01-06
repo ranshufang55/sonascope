@@ -1,0 +1,61 @@
+{
+  "name": "sonascope",
+  "version": "0.1.0",
+  "description": "A TypeScript audio analysis library and browser workbench.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js"
+    },
+    "./io": {
+      "types": "./dist/io/index.d.ts",
+      "import": "./dist/io/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "tsc -p tsconfig.build.json --noEmit",
+    "demo:build": "node scripts/build-demo.mjs"
+  },
+  "keywords": [
+    "audio",
+    "fft",
+    "stft",
+    "spectrum",
+    "mel",
+    "waveform",
+    "analysis",
+    "webaudio",
+    "visualization"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "22.10.0",
+    "prettier": "3.3.3",
+    "typescript": "5.6.3",
+    "vitest": "2.1.9"
+  }
+}
