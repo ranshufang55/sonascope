@@ -1,0 +1,44 @@
+import { describe, it, expect } from 'vitest';
+import {
+  PADDING_MODES,
+  padConstant,
+  padEdge,
+  padReflect,
+  padToPowerOfTwo,
+  padZero,
+} from './pad.js';
+
+describe('padding', () => {
+  it('padZero fills with zeros on both sides', () => {
+    const out = padZero([1, 2, 3], 2, 3);
+    expect(out.length).toBe(8);
+    expect(Array.from(out)).toEqual([0, 0, 1, 2, 3, 0, 0, 0]);
+  });
+
+  it('padReflect mirrors the input', () => {
+    const out = padReflect([1, 2, 3, 4], 2, 2);
+    expect(out.length).toBe(8);
+    expect(Array.from(out)).toEqual([3, 2, 1, 2, 3, 4, 3, 2]);
+  });
+
+  it('padEdge extends the last sample', () => {
+    const out = padEdge([1, 2, 3], 1, 2);
+    expect(Array.from(out)).toEqual([1, 1, 2, 3, 3, 3]);
+  });
+
+  it('padConstant uses the requested value', () => {
+    const out = padConstant([1, 2], 2, 2, 9);
+    expect(Array.from(out)).toEqual([9, 9, 1, 2, 9, 9]);
+  });
+
+  it('padToPowerOfTwo rounds up to the next power of two', () => {
+    expect(padToPowerOfTwo([1, 2, 3]).length).toBe(4);
+    expect(padToPowerOfTwo([1, 2, 3, 4, 5]).length).toBe(8);
+    expect(padToPowerOfTwo(new Float32Array(0)).length).toBe(1);
+  });
+
+  it('PADDING_MODES lists supported modes', () => {
+    expect(PADDING_MODES).toContain('zero');
+    expect(PADDING_MODES).toContain('reflect');
+  });
+});
