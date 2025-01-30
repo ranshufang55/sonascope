@@ -44,4 +44,24 @@ describe('sample-rate conversions', () => {
     expect(frameCount(2560, 1024, 512)).toBe(4);
     expect(frameCount(512, 1024, 512)).toBe(0);
   });
+
+  it('rejects non-finite, negative, and fractional frame arguments', () => {
+    expect(() => frameCount(NaN, 1024, 512)).toThrow();
+    expect(() => frameCount(-1, 1024, 512)).toThrow();
+    expect(() => frameCount(1024, 1024.5, 512)).toThrow();
+    expect(() => frameCount(1024, 1024, 0)).toThrow();
+    expect(() => frameCount(1024, 0, 512)).toThrow();
+  });
+
+  it('rejects oversized sample rates', () => {
+    expect(() => secondsToSamples(1, 10_000_000)).toThrow(/<= 192000/);
+  });
+
+  it('rejects negative milliseconds', () => {
+    expect(() => millisecondsToSamples(-1, 48000)).toThrow();
+  });
+
+  it('secondsToSamples allows fractional durations', () => {
+    expect(secondsToSamples(0.5, 48000)).toBe(24000);
+  });
 });
