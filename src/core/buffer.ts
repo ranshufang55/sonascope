@@ -2,6 +2,11 @@
 // the library. Channels are stored as Float32Array views in a fixed order
 // (channel 0 first). The number of samples per channel is identical across
 // channels (no padding holes).
+//
+// Construction takes a defensive copy of the channel list so that later
+// mutations of the caller's array do not break the buffer's invariants.
+// The internal channel data itself is mutable (sample views) so callers
+// can transform samples in place without rebuilding the buffer.
 
 export type ChannelData = Float32Array;
 export type SampleRate = number;
@@ -19,7 +24,7 @@ export class AudioBuffer implements AudioBufferShape {
   readonly numChannels: NumChannels;
   readonly numSamples: number;
   readonly length: number;
-  readonly data: ChannelData[];
+  readonly data: ReadonlyArray<ChannelData>;
 
   constructor(
     sampleRate: SampleRate,
@@ -50,6 +55,7 @@ export class AudioBuffer implements AudioBufferShape {
           `AudioBuffer: data length ${data.length} does not match numChannels ${numChannels}`,
         );
       }
+      const channels: ChannelData[] = new Array(numChannels);
       for (let c = 0; c < numChannels; c++) {
         const channel = data[c];
         if (!channel) {
@@ -60,14 +66,17 @@ export class AudioBuffer implements AudioBufferShape {
             `AudioBuffer: channel ${c} length ${channel.length} does not match numSamples ${numSamples}`,
           );
         }
+        const copy = new Float32Array(numSamples);
+        copy.set(channel);
+        channels[c] = copy;
       }
-      this.data = data;
+      this.data = Object.freeze(channels);
     } else {
       const channels: ChannelData[] = new Array(numChannels);
       for (let c = 0; c < numChannels; c++) {
         channels[c] = new Float32Array(numSamples);
       }
-      this.data = channels;
+      this.data = Object.freeze(channels);
     }
   }
 

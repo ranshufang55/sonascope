@@ -57,4 +57,30 @@ describe('AudioBuffer', () => {
     expect(() => buf.getChannel(1)).toThrow(RangeError);
     expect(() => buf.getChannel(-1)).toThrow(RangeError);
   });
+
+  it('defensively copies provided channel data', () => {
+    const a = new Float32Array([1, 2, 3]);
+    const b = new Float32Array([4, 5, 6]);
+    const buf = new AudioBuffer(44100, 2, 3, [a, b]);
+    a[0] = 99;
+    b[0] = 99;
+    expect(buf.getChannel(0)[0]).toBe(1);
+    expect(buf.getChannel(1)[0]).toBe(4);
+  });
+
+  it('freezes the channel list so it cannot be mutated', () => {
+    const buf = new AudioBuffer(44100, 2, 4);
+    expect(Object.isFrozen(buf.data)).toBe(true);
+    const channels = buf.data as Float32Array[];
+    expect(() =>
+      (channels as unknown as { push: (x: Float32Array) => void }).push(new Float32Array(4)),
+    ).toThrow();
+  });
+
+  it('freezes a single provided channel as well', () => {
+    const a = new Float32Array([1, 2, 3]);
+    const b = new Float32Array([4, 5, 6]);
+    const buf = new AudioBuffer(44100, 2, 3, [a, b]);
+    expect(Object.isFrozen(buf.data)).toBe(true);
+  });
 });
