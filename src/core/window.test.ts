@@ -80,4 +80,36 @@ describe('windows', () => {
   it('makeWindow rejects unknown type', () => {
     expect(() => makeWindow('unknown' as never, 4)).toThrow();
   });
+
+  it('every window type is [1] at length 1', () => {
+    for (const w of [
+      rectangular(1),
+      hann(1),
+      hamming(1),
+      blackman(1),
+      triangular(1),
+      bartlett(1),
+    ]) {
+      expect(w.length).toBe(1);
+      expect(w[0]).toBe(1);
+    }
+  });
+
+  it('triangular and bartlett are both symmetric and reach zero at the ends', () => {
+    const t = triangular(7);
+    const b = bartlett(7);
+    for (const w of [t, b]) {
+      expect(w[0]).toBeCloseTo(0, 6);
+      expect(w[6]).toBeCloseTo(0, 6);
+      expect(Math.abs(w[1] - w[5])).toBeLessThan(1e-6);
+      expect(Math.abs(w[2] - w[4])).toBeLessThan(1e-6);
+    }
+  });
+
+  it('colaNormalize rejects non-positive hop and non-finite windows', () => {
+    expect(() => colaNormalize(hann(8), 0)).toThrow();
+    expect(() => colaNormalize(hann(8), -1)).toThrow();
+    expect(() => colaNormalize(hann(8), 1.5)).toThrow();
+    expect(() => colaNormalize(new Float32Array([1, NaN]), 2)).toThrow();
+  });
 });

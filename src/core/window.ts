@@ -1,7 +1,14 @@
 // Window functions for STFT framing. All routines return Float32Array
 // of the requested length. They are pure and have no side effects.
+//
+// All windows are well-defined at length 1: the singleton case is
+// [1]. Hann, Hamming, Blackman, and Bartlett use a denominator of
+// (length - 1) which is zero at length 1; we special-case that path.
+// Triangular and Bartlett are kept distinct: triangular reaches
+// zero only at the endpoints and peaks at the centre, while
+// bartlett is the symmetric ramp that touches zero at every endpoint.
 
-import { assertInteger, assertPositive } from './validation.js';
+import { assertFiniteSamples, assertInteger, assertPositive } from './validation.js';
 
 const TWO_PI = Math.PI * 2;
 
@@ -17,32 +24,37 @@ export function makeWindow(type: WindowType, length: number): Float32Array {
   assertInteger(length, 'length');
   assertPositive(length, 'length');
   const w = new Float32Array(length);
+  if (length === 1) {
+    w[0] = 1;
+    return w;
+  }
+  const denom = length - 1;
   switch (type) {
     case 'rectangular':
       w.fill(1);
       return w;
     case 'hann':
-      for (let i = 0; i < length; i++) w[i] = 0.5 * (1 - Math.cos((TWO_PI * i) / (length - 1)));
+      for (let i = 0; i < length; i++) w[i] = 0.5 * (1 - Math.cos((TWO_PI * i) / denom));
       return w;
     case 'hamming':
-      for (let i = 0; i < length; i++) w[i] = 0.54 - 0.46 * Math.cos((TWO_PI * i) / (length - 1));
+      for (let i = 0; i < length; i++) w[i] = 0.54 - 0.46 * Math.cos((TWO_PI * i) / denom);
       return w;
     case 'blackman':
       for (let i = 0; i < length; i++) {
-        const x = (TWO_PI * i) / (length - 1);
+        const x = (TWO_PI * i) / denom;
         w[i] = 0.42 - 0.5 * Math.cos(x) + 0.08 * Math.cos(2 * x);
       }
       return w;
     case 'triangular':
       for (let i = 0; i < length; i++) {
-        const center = (length - 1) / 2;
+        const center = denom / 2;
         w[i] = 1 - Math.abs(i - center) / center;
       }
       return w;
     case 'bartlett':
       for (let i = 0; i < length; i++) {
-        if (i <= (length - 1) / 2) w[i] = (2 * i) / (length - 1);
-        else w[i] = 2 - (2 * i) / (length - 1);
+        if (i <= denom / 2) w[i] = (2 * i) / denom;
+        else w[i] = 2 - (2 * i) / denom;
       }
       return w;
     default:
@@ -78,11 +90,14 @@ export function applyWindow(samples: Float32Array, window: ArrayLike<number>): F
 }
 
 export function windowSum(window: ArrayLike<number>): number {
+  assertFiniteSamples(window, 'window');
   let s = 0;
   for (let i = 0; i < window.length; i++) s += window[i] ?? 0;
   return s;
 }
 
 export function colaNormalize(window: ArrayLike<number>, hopSize: number): number {
+  assertInteger(hopSize, 'hopSize');
+  assertPositive(hopSize, 'hopSize');
   return windowSum(window) / hopSize;
 }
