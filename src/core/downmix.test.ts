@@ -6,7 +6,7 @@ import { generateSine } from './generators.js';
 describe('downmix', () => {
   it('downmixes a stereo buffer to mono with AVERAGE policy', () => {
     const left = generateSine(48000, 0.01, 1000, { amplitude: 1 });
-    const right = generateSine(48000, 0.01, 1000, { amplitude: -1, phase: 0 });
+    const right = generateSine(48000, 0.01, 1000, { amplitude: 1, phase: Math.PI });
     const stereo = new AudioBuffer(48000, 2, left.numSamples, [
       left.getChannel(0),
       right.getChannel(0),

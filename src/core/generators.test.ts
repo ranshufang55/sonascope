@@ -104,4 +104,53 @@ describe('generators', () => {
       expect(Math.abs(v)).toBeLessThan(1);
     }
   });
+
+  it('quarter-cycle phase produces a sine starting at its maximum', () => {
+    const buf = generateSine(48000, 0.001, 1000, { amplitude: 1, phase: Math.PI / 2 });
+    expect(buf.getChannel(0)[0]).toBeCloseTo(1, 4);
+  });
+
+  it('negative phase is equivalent to its positive wrap', () => {
+    const a = generateSine(48000, 0.001, 1000, { amplitude: 1, phase: -Math.PI / 2 });
+    const b = generateSine(48000, 0.001, 1000, { amplitude: 1, phase: (3 * Math.PI) / 2 });
+    expect(a.getChannel(0)[0] ?? 0).toBeCloseTo(b.getChannel(0)[0] ?? 0, 4);
+    expect(a.getChannel(0)[0]).toBeCloseTo(b.getChannel(0)[0] ?? 0, 4);
+  });
+
+  it('rejects NaN amplitude', () => {
+    expect(() => generateSine(48000, 0.01, 1000, { amplitude: NaN })).toThrow(/finite/);
+  });
+
+  it('rejects NaN phase', () => {
+    expect(() => generateSine(48000, 0.01, 1000, { phase: NaN })).toThrow(/finite/);
+  });
+
+  it('rejects NaN duty', () => {
+    expect(() => generateSquare(48000, 0.01, 200, { duty: NaN })).toThrow(/finite/);
+  });
+
+  it('rejects NaN seed', () => {
+    expect(() => generateWhiteNoise(48000, 0.01, { seed: NaN })).toThrow(/finite/);
+  });
+
+  it('rejects negative duration', () => {
+    expect(() => generateSine(48000, -1, 1000)).toThrow(/>= 0/);
+    expect(() => generateWhiteNoise(48000, -0.5, { seed: 1 })).toThrow(/>= 0/);
+  });
+
+  it('rejects negative frequency', () => {
+    expect(() => generateSine(48000, 0.01, -100)).toThrow(/>= 0/);
+    expect(() => generateSquare(48000, 0.01, -100)).toThrow(/>= 0/);
+  });
+
+  it('zero duration produces an empty buffer', () => {
+    const buf = generateSine(48000, 0, 1000);
+    expect(buf.numSamples).toBe(0);
+  });
+
+  it('square wave accepts the same phase as sine', () => {
+    const pi2 = Math.PI / 2;
+    const a = generateSquare(48000, 0.001, 1000, { phase: pi2 });
+    expect(Number.isFinite(a.getChannel(0)[0] ?? 0)).toBe(true);
+  });
 });
