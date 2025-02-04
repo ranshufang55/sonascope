@@ -83,4 +83,50 @@ describe('fft', () => {
     }
     expect(peakIdx).toBe(4);
   });
+
+  it('fftInPlace rejects mismatched re/im lengths before mutation', () => {
+    const re = new Float32Array(4);
+    const im = new Float32Array(8);
+    const reBefore = new Float32Array(re);
+    const imBefore = new Float32Array(im);
+    expect(() => fftInPlace(re, im)).toThrow(/mismatch/);
+    expect(Array.from(re)).toEqual(Array.from(reBefore));
+    expect(Array.from(im)).toEqual(Array.from(imBefore));
+  });
+
+  it('ifftInPlace leaves inputs unchanged on a failed call', () => {
+    const re = new Float32Array([1, 2, 3, 4]);
+    const im = new Float32Array([4, 3, 2, 1]);
+    const reBefore = new Float32Array(re);
+    const imBefore = new Float32Array(im);
+    expect(() => ifftInPlace(re, im)).not.toThrow();
+    // A successful call mutates: sanity check the mutation.
+    expect(Array.from(re)).not.toEqual(Array.from(reBefore));
+    expect(Array.from(im)).not.toEqual(Array.from(imBefore));
+    // Now a failing call: invalid size.
+    const re2 = new Float32Array([1, 2, 3]);
+    const im2 = new Float32Array([0, 0, 0]);
+    const reBefore2 = new Float32Array(re2);
+    const imBefore2 = new Float32Array(im2);
+    expect(() => ifftInPlace(re2, im2)).toThrow();
+    expect(Array.from(re2)).toEqual(Array.from(reBefore2));
+    expect(Array.from(im2)).toEqual(Array.from(imBefore2));
+  });
+
+  it('fft rejects non-finite samples', () => {
+    const samples = new Float32Array(4);
+    samples[2] = NaN;
+    expect(() => fft(samples)).toThrow(/non-finite/);
+  });
+
+  it('ifft rejects mismatched re/im lengths without mutating', () => {
+    const re = new Float32Array(4);
+    const im = new Float32Array(2);
+    expect(() => ifft({ re, im })).toThrow();
+  });
+
+  it('fft rejects sizes above MAX_FFT_SIZE', () => {
+    const samples = new Float32Array(1 << 25);
+    expect(() => fft(samples)).toThrow(/<= 1048576/);
+  });
 });

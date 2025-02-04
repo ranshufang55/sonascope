@@ -1,8 +1,16 @@
 // Cooley-Tukey radix-2 FFT. Operates on a pair of Float32Arrays
-// holding real and imaginary parts. Power-of-two sizes only.
+// holding real and imaginary parts. Power-of-two sizes only, with
+// a documented upper bound (MAX_FFT_SIZE = 2^20) to keep the loop
+// counters and bit-reversal table inside safe integer ranges.
+//
+// Every public entry point validates its arguments before mutating
+// any input. ifftInPlace in particular validates the lengths first
+// so that a failed call leaves both arrays unchanged.
 
 import { isPow2 } from './pow2.js';
-import { assertInteger, assertPositive } from './validation.js';
+import { assertFiniteSamples, assertInteger, assertPositive } from './validation.js';
+
+export const MAX_FFT_SIZE = 1 << 20; // 1,048,576
 
 export interface ComplexArray {
   re: Float32Array;
@@ -35,14 +43,23 @@ function assertPowerOfTwo(n: number, label: string): void {
   if (!isPow2(n)) {
     throw new RangeError(`${label} must be a power of two, got ${n}`);
   }
+  if (n > MAX_FFT_SIZE) {
+    throw new RangeError(`${label} must be <= ${MAX_FFT_SIZE}, got ${n}`);
+  }
+}
+
+function assertMatchingLengths(re: ArrayLike<number>, im: ArrayLike<number>): void {
+  if (re.length !== im.length) {
+    throw new RangeError(`re/im length mismatch: ${re.length} vs ${im.length}`);
+  }
 }
 
 export function fftInPlace(re: Float32Array, im: Float32Array): void {
+  assertPowerOfTwo(re.length, 're.length');
+  assertMatchingLengths(re, im);
+  assertFiniteSamples(re, 're');
+  assertFiniteSamples(im, 'im');
   const n = re.length;
-  assertPowerOfTwo(n, 're.length');
-  if (im.length !== n) {
-    throw new RangeError(`fftInPlace: im length ${im.length} does not match re ${n}`);
-  }
   const table = bitReversalTable(n);
   for (let i = 0; i < n; i++) {
     const j = table[i] ?? 0;
@@ -79,6 +96,12 @@ export function fftInPlace(re: Float32Array, im: Float32Array): void {
 }
 
 export function ifftInPlace(re: Float32Array, im: Float32Array): void {
+  // Validate before any mutation so a failed call leaves both arrays
+  // untouched.
+  assertPowerOfTwo(re.length, 're.length');
+  assertMatchingLengths(re, im);
+  assertFiniteSamples(re, 're');
+  assertFiniteSamples(im, 'im');
   const n = re.length;
   for (let i = 0; i < n; i++) im[i] = -(im[i] ?? 0);
   fftInPlace(re, im);
@@ -91,6 +114,7 @@ export function ifftInPlace(re: Float32Array, im: Float32Array): void {
 export function fft(samples: ArrayLike<number>): ComplexArray {
   const n = samples.length;
   assertPowerOfTwo(n, 'samples.length');
+  assertFiniteSamples(samples, 'samples');
   const re = new Float32Array(n);
   const im = new Float32Array(n);
   for (let i = 0; i < n; i++) re[i] = samples[i] ?? 0;
@@ -99,8 +123,14 @@ export function fft(samples: ArrayLike<number>): ComplexArray {
 }
 
 export function ifft(input: ComplexArray): ComplexArray {
+  if (!input || !(input.re instanceof Float32Array) || !(input.im instanceof Float32Array)) {
+    throw new RangeError('ifft: input.re and input.im must be Float32Array');
+  }
+  assertMatchingLengths(input.re, input.im);
+  assertPowerOfTwo(input.re.length, 'input.re.length');
+  assertFiniteSamples(input.re, 'input.re');
+  assertFiniteSamples(input.im, 'input.im');
   const n = input.re.length;
-  assertPowerOfTwo(n, 'input.re.length');
   const re = new Float32Array(n);
   const im = new Float32Array(n);
   for (let i = 0; i < n; i++) {
@@ -112,8 +142,6 @@ export function ifft(input: ComplexArray): ComplexArray {
 }
 
 export function fftReal(samples: ArrayLike<number>): ComplexArray {
-  const n = samples.length;
-  assertPowerOfTwo(n, 'samples.length');
   return fft(samples);
 }
 
