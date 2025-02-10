@@ -53,3 +53,14 @@ describe('validation', () => {
     expect(() => assertInRange(1.01, 0, 1)).toThrow();
   });
 });
+
+it('rejects non-finite numeric bounds across the guard surface', () => {
+  for (const value of [NaN, Infinity, -Infinity]) {
+    expect(() => assertPositive(value)).toThrow();
+    expect(() => assertNonNegative(value)).toThrow();
+    expect(() => assertInRange(value, 0, 1)).toThrow();
+  }
+  expect(() => assertInteger(Number.MAX_SAFE_INTEGER + 1)).toThrow();
+  expect(() => assertInRange(1, 2, 0)).toThrow();
+  expect(() => assertInRange(1, 0, Infinity)).toThrow();
+});

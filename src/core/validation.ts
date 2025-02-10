@@ -31,20 +31,22 @@ export function assertFiniteSamples(samples: ArrayLike<number>, label: string = 
 }
 
 export function assertPositive(value: number, label: string = 'value'): void {
+  assertFinite(value, label);
   if (!(value > 0)) {
     throw new RangeError(`${label} must be > 0, got ${value}`);
   }
 }
 
 export function assertNonNegative(value: number, label: string = 'value'): void {
+  assertFinite(value, label);
   if (!(value >= 0)) {
     throw new RangeError(`${label} must be >= 0, got ${value}`);
   }
 }
 
 export function assertInteger(value: number, label: string = 'value'): void {
-  if (!Number.isInteger(value)) {
-    throw new RangeError(`${label} must be an integer, got ${value}`);
+  if (!Number.isSafeInteger(value)) {
+    throw new RangeError(`${label} must be a safe integer, got ${value}`);
   }
 }
 
@@ -54,6 +56,10 @@ export function assertInRange(
   max: number,
   label: string = 'value',
 ): void {
+  assertFinite(value, label);
+  assertFinite(min, 'min');
+  assertFinite(max, 'max');
+  if (min > max) throw new RangeError('min must not exceed max');
   if (!(value >= min && value <= max)) {
     throw new RangeError(`${label} must be in [${min}, ${max}], got ${value}`);
   }
