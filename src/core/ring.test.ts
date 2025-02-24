@@ -68,3 +68,18 @@ it('rejects fractional and unbounded ring capacities', () => {
   expect(Array.from(ring.toArray())).toEqual([3]);
   expect(ring.isFull()).toBe(true);
 });
+
+it('leaves a ring unchanged after invalid bulk input', () => {
+  const ring = new RingBuffer(3);
+  ring.pushMany([1, 2]);
+  for (const input of [
+    [3, NaN],
+    [3, Infinity],
+    [3, 1e40],
+  ]) {
+    expect(() => ring.pushMany(input)).toThrow();
+    expect(Array.from(ring.toArray())).toEqual([1, 2]);
+  }
+  expect(() => ring.push(1e40)).toThrow();
+  expect(Array.from(ring.toArray())).toEqual([1, 2]);
+});

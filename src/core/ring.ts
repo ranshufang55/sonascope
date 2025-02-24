@@ -1,7 +1,7 @@
 // Ring buffer for streaming analysis. Fixed-capacity, Float32Array
 // backed. Push appends a value, dropping the oldest when full.
 
-import { assertInteger, assertPositive } from './validation.js';
+import { assertFiniteSamples, assertInteger, assertPositive } from './validation.js';
 import { MAX_SAMPLES_PER_BUFFER } from './sample-rate.js';
 
 export class RingBuffer {
@@ -39,7 +39,7 @@ export class RingBuffer {
   }
 
   push(value: number): void {
-    if (!Number.isFinite(value)) {
+    if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value))) {
       throw new RangeError(`RingBuffer.push: value must be finite, got ${value}`);
     }
     if (this.count < this.capacity) {
@@ -54,6 +54,11 @@ export class RingBuffer {
   }
 
   pushMany(values: ArrayLike<number>): void {
+    assertFiniteSamples(values);
+    for (let i = 0; i < values.length; i++) {
+      if (!Number.isFinite(Math.fround(values[i]!)))
+        throw new RangeError('sample exceeds Float32 range');
+    }
     for (let i = 0; i < values.length; i++) this.push(values[i] ?? 0);
   }
 
