@@ -49,3 +49,23 @@ it('rejects invalid streaming settings during construction', () => {
   expect(() => analyzer.push([1, 2, NaN])).toThrow();
   expect(analyzer.push([1, 1, 1, 1])[0]?.rms).toBe(1);
 });
+
+it('matches direct windows for every two-chunk partition and hop policy', () => {
+  const signal = [1, 2, 3, 4, 0, -1, 0, 1, 2, 1, 0, -2, 1, 1, 1, 1];
+  for (const hopSize of [1, 2, 4, 8]) {
+    const expected: number[] = [];
+    for (let start = 0; start + 4 <= signal.length; start += hopSize) {
+      expected.push(
+        Math.sqrt(signal.slice(start, start + 4).reduce((sum, x) => sum + x * x, 0) / 4),
+      );
+    }
+    for (let split = 0; split <= signal.length; split++) {
+      const analyzer = new StreamingAnalyzer({ sampleRate: 8, frameSize: 4, hopSize });
+      const frames = [
+        ...analyzer.push(signal.slice(0, split)),
+        ...analyzer.push(signal.slice(split)),
+      ];
+      expect(frames.map((frame) => frame.rms)).toEqual(expected);
+    }
+  }
+});

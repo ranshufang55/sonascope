@@ -31,7 +31,8 @@ export class StreamingAnalyzer {
   readonly frameSize: number;
   readonly hopSize: number;
   private readonly buffer: RingBuffer;
-  private sinceFrame = 0;
+  private received = 0;
+  private nextFrameEnd: number;
   private readonly frames: StreamingFrame[] = [];
 
   constructor(options: StreamingOptions) {
@@ -45,6 +46,7 @@ export class StreamingAnalyzer {
     this.frameSize = options.frameSize;
     this.hopSize = options.hopSize;
     this.buffer = new RingBuffer(this.frameSize);
+    this.nextFrameEnd = this.frameSize;
   }
 
   push(samples: ArrayLike<number>): StreamingFrame[] {
@@ -56,12 +58,12 @@ export class StreamingAnalyzer {
     const out: StreamingFrame[] = [];
     for (let i = 0; i < samples.length; i++) {
       this.buffer.push(samples[i] ?? 0);
-      this.sinceFrame++;
-      if (this.sinceFrame >= this.hopSize && this.buffer.size() === this.frameSize) {
+      this.received++;
+      if (this.received === this.nextFrameEnd) {
         const frame = this.analyse(this.buffer.toArray());
         out.push(frame);
         this.frames.push(frame);
-        this.sinceFrame = 0;
+        this.nextFrameEnd += this.hopSize;
       }
     }
     return out;
@@ -73,7 +75,8 @@ export class StreamingAnalyzer {
 
   reset(): void {
     this.buffer.clear();
-    this.sinceFrame = 0;
+    this.received = 0;
+    this.nextFrameEnd = this.frameSize;
     this.frames.length = 0;
   }
 
