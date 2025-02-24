@@ -15,6 +15,9 @@ export function assertFinite(value: number, label: string = 'value'): void {
 }
 
 export function findFirstNonFinite(arr: ArrayLike<number>): number {
+  assertInteger(arr.length, 'samples.length');
+  assertNonNegative(arr.length, 'samples.length');
+  if (arr.length > 2 ** 24) throw new RangeError('samples.length exceeds 16777216');
   for (let i = 0; i < arr.length; i++) {
     const v = arr[i];
     if (v === undefined || !Number.isFinite(v)) return i;

@@ -64,3 +64,11 @@ it('rejects non-finite numeric bounds across the guard surface', () => {
   expect(() => assertInRange(1, 2, 0)).toThrow();
   expect(() => assertInRange(1, 0, Infinity)).toThrow();
 });
+
+it('rejects invalid array-like lengths without reading sample values', () => {
+  for (const length of [-1, 1.5, Infinity, NaN, 2 ** 24 + 1]) {
+    expect(() => findFirstNonFinite({ length })).toThrow();
+  }
+  expect(findFirstNonFinite([])).toBe(-1);
+  expect(findFirstNonFinite([0, -1, 1])).toBe(-1);
+});
