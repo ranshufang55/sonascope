@@ -1,7 +1,8 @@
 // Ring buffer for streaming analysis. Fixed-capacity, Float32Array
 // backed. Push appends a value, dropping the oldest when full.
 
-import { assertNonNegative, assertPositive } from './validation.js';
+import { assertInteger, assertPositive } from './validation.js';
+import { MAX_SAMPLES_PER_BUFFER } from './sample-rate.js';
 
 export class RingBuffer {
   readonly capacity: number;
@@ -12,7 +13,9 @@ export class RingBuffer {
 
   constructor(capacity: number) {
     assertPositive(capacity, 'capacity');
-    assertNonNegative(capacity, 'capacity');
+    assertInteger(capacity, 'capacity');
+    if (capacity > MAX_SAMPLES_PER_BUFFER)
+      throw new RangeError('ring capacity exceeds sample limit');
     this.capacity = capacity;
     this.data = new Float32Array(capacity);
   }

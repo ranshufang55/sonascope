@@ -58,3 +58,13 @@ describe('RingBuffer', () => {
     expect(() => r.push(Infinity)).toThrow(/finite/);
   });
 });
+
+it('rejects fractional and unbounded ring capacities', () => {
+  for (const capacity of [0, -1, 1.5, NaN, Infinity, 2 ** 24 + 1]) {
+    expect(() => new RingBuffer(capacity)).toThrow();
+  }
+  const ring = new RingBuffer(1);
+  ring.pushMany([1, 2, 3]);
+  expect(Array.from(ring.toArray())).toEqual([3]);
+  expect(ring.isFull()).toBe(true);
+});
