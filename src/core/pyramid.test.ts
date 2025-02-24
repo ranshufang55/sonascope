@@ -38,3 +38,20 @@ describe('pyramid', () => {
     expect(p.levels.length).toBe(1);
   });
 });
+
+it('matches exact min/max for every viewport in short irregular signals', () => {
+  for (const values of [[], [7], [0, 0, 99, 0], [-8, 3, 1, -2, 9, 4, -7]]) {
+    for (const depth of [1, 2, 32]) {
+      const pyramid = buildPyramid(values, depth);
+      for (let start = 0; start <= values.length; start++) {
+        for (let end = start; end <= values.length; end++) {
+          const selected = values.slice(start, end);
+          const expected = selected.length
+            ? { min: Math.min(...selected), max: Math.max(...selected) }
+            : { min: 0, max: 0 };
+          expect(queryPyramid(pyramid, start, end)).toEqual(expected);
+        }
+      }
+    }
+  }
+});

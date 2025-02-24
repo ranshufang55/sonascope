@@ -1,76 +1,67 @@
-// Waveform min/max pyramid. Pre-computes per-pixel min/max pairs at
-// multiple resolutions so a render call can ask for any sample range
-// in O(levels).
-
-import { assertNonNegative, assertPositive } from './validation.js';
+import { assertFinite, assertFiniteSamples, assertInteger, assertInRange } from './validation.js';
 
 export interface PyramidLevel {
   min: Float32Array;
   max: Float32Array;
 }
-
 export interface Pyramid {
   levels: PyramidLevel[];
   numSamples: number;
 }
-
-export function buildPyramid(samples: ArrayLike<number>, levels: number = 6): Pyramid {
-  assertNonNegative(levels, 'levels');
-  assertPositive(levels, 'levels');
-  const out: PyramidLevel[] = [];
-  let currentMin = new Float32Array(samples.length);
-  let currentMax = new Float32Array(samples.length);
-  for (let i = 0; i < samples.length; i++) {
-    currentMin[i] = samples[i] ?? 0;
-    currentMax[i] = samples[i] ?? 0;
-  }
-  out.push({ min: currentMin, max: currentMax });
-  for (let l = 1; l < levels; l++) {
-    const prev = out[l - 1];
-    if (!prev) break;
-    const len = prev.min.length;
-    const nextLen = Math.max(1, Math.ceil(len / 2));
-    const nextMin = new Float32Array(nextLen);
-    const nextMax = new Float32Array(nextLen);
-    for (let i = 0; i < nextLen; i++) {
-      const a = i * 2;
-      const b = Math.min(len - 1, a + 1);
-      const mn = Math.min(prev.min[a] ?? 0, prev.min[b] ?? 0);
-      const mx = Math.max(prev.max[a] ?? 0, prev.max[b] ?? 0);
-      nextMin[i] = mn;
-      nextMax[i] = mx;
-    }
-    out.push({ min: nextMin, max: nextMax });
-    if (nextLen <= 1) break;
-  }
-  return { levels: out, numSamples: samples.length };
+export interface PyramidRange {
+  min: number;
+  max: number;
 }
 
+/** Build min/max levels. The default reaches the root in at most 25 levels. */
+export function buildPyramid(samples: ArrayLike<number>, levels = 32): Pyramid {
+  assertInteger(levels, 'levels');
+  assertInRange(levels, 1, 32, 'levels');
+  assertFiniteSamples(samples);
+  const initial = Float32Array.from(samples);
+  assertFiniteSamples(initial);
+  const result: PyramidLevel[] = [{ min: initial, max: initial.slice() }];
+  while (result.length < levels) {
+    const previous = result[result.length - 1]!;
+    if (previous.min.length <= 1) break;
+    const size = Math.ceil(previous.min.length / 2);
+    const min = new Float32Array(size);
+    const max = new Float32Array(size);
+    for (let i = 0; i < size; i++) {
+      const left = i * 2;
+      const right = Math.min(left + 1, previous.min.length - 1);
+      min[i] = Math.min(previous.min[left]!, previous.min[right]!);
+      max[i] = Math.max(previous.max[left]!, previous.max[right]!);
+    }
+    result.push({ min, max });
+  }
+  return { levels: result, numSamples: samples.length };
+}
+
+/** Query a clamped half-open range using only completely contained blocks. */
 export function queryPyramid(
   pyramid: Pyramid,
   startSample: number,
   endSample: number,
-): { min: number; max: number } {
-  if (pyramid.levels.length === 0) return { min: 0, max: 0 };
-  const lo = Math.max(0, Math.min(pyramid.numSamples, Math.floor(startSample)));
-  const hi = Math.max(lo, Math.min(pyramid.numSamples, Math.ceil(endSample)));
-  let mn = Infinity;
-  let mx = -Infinity;
-  for (let l = 0; l < pyramid.levels.length; l++) {
-    const level = pyramid.levels[l];
-    if (!level) continue;
-    const stride = 1 << l;
-    const a = Math.floor(lo / stride);
-    const b = Math.min(level.min.length - 1, Math.ceil(hi / stride));
-    if (a > b) continue;
-    for (let i = a; i <= b; i++) {
-      const a2 = level.min[i] ?? 0;
-      const b2 = level.max[i] ?? 0;
-      if (a2 < mn) mn = a2;
-      if (b2 > mx) mx = b2;
-    }
+): PyramidRange {
+  assertFinite(startSample, 'startSample');
+  assertFinite(endSample, 'endSample');
+  let start = Math.max(0, Math.min(pyramid.numSamples, Math.floor(startSample)));
+  const end = Math.max(start, Math.min(pyramid.numSamples, Math.ceil(endSample)));
+  if (start >= end) return { min: 0, max: 0 };
+  let min = Infinity;
+  let max = -Infinity;
+  while (start < end) {
+    let level = pyramid.levels.length - 1;
+    while (level > 0 && (start % 2 ** level !== 0 || start + 2 ** level > end)) level--;
+    const selected = pyramid.levels[level];
+    if (!selected) throw new RangeError('pyramid has no base level');
+    const index = start / 2 ** level;
+    if (index >= selected.min.length || index >= selected.max.length)
+      throw new RangeError('invalid pyramid level');
+    min = Math.min(min, selected.min[index]!);
+    max = Math.max(max, selected.max[index]!);
+    start += 2 ** level;
   }
-  if (mn === Infinity) mn = 0;
-  if (mx === -Infinity) mx = 0;
-  return { min: mn, max: mx };
+  return { min, max };
 }
