@@ -37,3 +37,15 @@ describe('streaming analyzer', () => {
     expect(a.framesOut().length).toBe(0);
   });
 });
+
+it('rejects invalid streaming settings during construction', () => {
+  for (const frameSize of [0, 3, 1.5, Infinity, 2 ** 21]) {
+    expect(() => new StreamingAnalyzer({ sampleRate: 8000, frameSize, hopSize: 1 })).toThrow();
+  }
+  for (const hopSize of [0, -1, 1.5, NaN, Infinity]) {
+    expect(() => new StreamingAnalyzer({ sampleRate: 8000, frameSize: 4, hopSize })).toThrow();
+  }
+  const analyzer = new StreamingAnalyzer({ sampleRate: 8, frameSize: 4, hopSize: 4 });
+  expect(() => analyzer.push([1, 2, NaN])).toThrow();
+  expect(analyzer.push([1, 1, 1, 1])[0]?.rms).toBe(1);
+});
