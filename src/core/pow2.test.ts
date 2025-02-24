@@ -38,3 +38,17 @@ describe('pow2 helpers', () => {
     expect(log2Int(1024)).toBe(10);
   });
 });
+
+it('handles values above the signed 32-bit boundary', () => {
+  expect(nextPow2(2 ** 31 + 1)).toBe(2 ** 32);
+  expect(prevPow2(2 ** 32 - 1)).toBe(2 ** 31);
+  expect(log2Int(2 ** 40)).toBe(40);
+  expect(isPow2(2 ** 32 + 1)).toBe(false);
+  expect(isPow2(2 ** 40)).toBe(true);
+  for (const n of [NaN, Infinity, -1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+    expect(() => nextPow2(n)).toThrow();
+    expect(() => prevPow2(n)).toThrow();
+    expect(() => log2Int(n)).toThrow();
+  }
+  expect(() => nextPow2(Number.MAX_SAFE_INTEGER)).toThrow();
+});

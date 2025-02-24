@@ -1,36 +1,32 @@
-// Power-of-two helpers used by the FFT to pad input sizes.
+import { assertInteger, assertNonNegative } from './validation.js';
 
-import { assertNonNegative, assertInteger } from './validation.js';
+function assertCount(n: number): void {
+  assertInteger(n, 'n');
+  assertNonNegative(n, 'n');
+}
 
 export function isPow2(n: number): boolean {
-  if (!Number.isInteger(n) || n < 0) return false;
-  return n > 0 && (n & (n - 1)) === 0;
+  return Number.isSafeInteger(n) && n > 0 && 2 ** Math.round(Math.log2(n)) === n;
 }
 
 export function nextPow2(n: number): number {
-  assertNonNegative(n, 'n');
-  if (n <= 1) return 1;
-  let p = 1;
-  while (p < n) p <<= 1;
-  return p;
+  assertCount(n);
+  let value = 1;
+  while (value < n) value *= 2;
+  if (!Number.isSafeInteger(value)) throw new RangeError('next power exceeds safe integer range');
+  return value;
 }
 
 export function prevPow2(n: number): number {
-  assertNonNegative(n, 'n');
-  if (n < 1) return 0;
-  let p = 1;
-  while (p << 1 <= n) p <<= 1;
-  return p;
+  assertCount(n);
+  if (n === 0) return 0;
+  let value = 1;
+  while (value <= n / 2) value *= 2;
+  return value;
 }
 
 export function log2Int(n: number): number {
-  assertInteger(n, 'n');
-  if (n < 1) return 0;
-  let bits = 0;
-  let v = n;
-  while (v > 1) {
-    v >>= 1;
-    bits++;
-  }
-  return bits;
+  assertCount(n);
+  if (n === 0) return 0;
+  return Math.round(Math.log2(prevPow2(n)));
 }
