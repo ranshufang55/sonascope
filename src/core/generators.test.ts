@@ -70,10 +70,7 @@ describe('generators', () => {
   it('triangle wave is bounded', () => {
     const buf = generateTriangle(48000, 0.05, 100);
     const data = buf.getChannel(0);
-    for (const v of data) {
-      expect(v).toBeLessThanOrEqual(1 + 1e-6);
-      expect(v).toBeGreaterThanOrEqual(-1 - 1e-6);
-    }
+    expect(data.every((v) => v <= 1 + 1e-6 && v >= -1 - 1e-6)).toBe(true);
   });
 
   it('white noise is bounded and zero-mean', () => {
@@ -82,27 +79,20 @@ describe('generators', () => {
     const buf = generateWhiteNoise(48000, 2, { amplitude: 1, seed: 7 });
     const data = buf.getChannel(0);
     let sum = 0;
-    for (const v of data) {
-      expect(v).toBeLessThanOrEqual(1);
-      expect(v).toBeGreaterThanOrEqual(-1);
-      sum += v;
-    }
+    expect(data.every((v) => v <= 1 && v >= -1)).toBe(true);
+    for (const v of data) sum += v;
     expect(Math.abs(sum / data.length)).toBeLessThan(0.01);
   });
 
   it('noise is deterministic given a seed', () => {
     const a = generateWhiteNoise(48000, 0.05, { seed: 42 });
     const b = generateWhiteNoise(48000, 0.05, { seed: 42 });
-    for (let i = 0; i < a.numSamples; i++) {
-      expect(a.getChannel(0)[i]).toBe(b.getChannel(0)[i] ?? 0);
-    }
+    expect(a.getChannel(0)).toEqual(b.getChannel(0));
   });
 
   it('gaussian noise stays mostly bounded by 3*amplitude', () => {
     const buf = generateGaussianNoise(48000, 0.5, { amplitude: 0.1, seed: 3 });
-    for (const v of buf.getChannel(0)) {
-      expect(Math.abs(v)).toBeLessThan(1);
-    }
+    expect(buf.getChannel(0).every((v) => Math.abs(v) < 1)).toBe(true);
   });
 
   it('quarter-cycle phase produces a sine starting at its maximum', () => {

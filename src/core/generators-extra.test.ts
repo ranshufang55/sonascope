@@ -20,9 +20,7 @@ describe('extra generators', () => {
 
   it('log chirp stays bounded', () => {
     const buf = generateLogChirp(48000, 0.5, 100, 5000);
-    for (const v of buf.getChannel(0)) {
-      expect(Math.abs(v)).toBeLessThanOrEqual(1 + 1e-6);
-    }
+    expect(buf.getChannel(0).every((v) => Math.abs(v) <= 1 + 1e-6)).toBe(true);
   });
 
   it('impulse has 1.0 at index 0 and zero elsewhere', () => {
@@ -48,19 +46,14 @@ describe('extra generators', () => {
   it('pink noise is bounded and approximately zero-mean', () => {
     const buf = generatePinkNoise(48000, 2, { amplitude: 1, seed: 5 });
     let sum = 0;
-    for (const v of buf.getChannel(0)) {
-      expect(Math.abs(v)).toBeLessThan(1.5);
-      sum += v;
-    }
+    expect(buf.getChannel(0).every((v) => Math.abs(v) < 1.5)).toBe(true);
+    for (const v of buf.getChannel(0)) sum += v;
     expect(Math.abs(sum / buf.numSamples)).toBeLessThan(0.05);
   });
 
   it('brown noise stays within [-1, 1]', () => {
     const buf = generateBrownNoise(48000, 0.5, { seed: 9 });
-    for (const v of buf.getChannel(0)) {
-      expect(v).toBeGreaterThanOrEqual(-1);
-      expect(v).toBeLessThanOrEqual(1);
-    }
+    expect(buf.getChannel(0).every((v) => v >= -1 && v <= 1)).toBe(true);
   });
 
   it('rejects invalid chirp arguments', () => {
