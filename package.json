@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run",
+    "test": "vitest run --pool=forks --poolOptions.forks.singleFork --testTimeout=10000",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
