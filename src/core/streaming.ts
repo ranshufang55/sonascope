@@ -24,6 +24,7 @@ export interface StreamingOptions {
   sampleRate: number;
   frameSize: number;
   hopSize: number;
+  retainFrames?: number;
 }
 
 export class StreamingAnalyzer {
@@ -34,6 +35,7 @@ export class StreamingAnalyzer {
   private received = 0;
   private nextFrameEnd: number;
   private readonly frames: StreamingFrame[] = [];
+  private readonly retainFrames: number;
 
   constructor(options: StreamingOptions) {
     assertSampleRate(options.sampleRate);
@@ -42,6 +44,11 @@ export class StreamingAnalyzer {
     if (options.hopSize < 1) throw new RangeError('hopSize must be positive');
     if (!isPow2(options.frameSize) || options.frameSize > MAX_FFT_SIZE)
       throw new RangeError('unsupported FFT frameSize');
+    const retainFrames = options.retainFrames ?? 1024;
+    assertInteger(retainFrames, 'retainFrames');
+    if (retainFrames < 0 || retainFrames > 100_000)
+      throw new RangeError('retainFrames must be in [0,100000]');
+    this.retainFrames = retainFrames;
     this.sampleRate = options.sampleRate;
     this.frameSize = options.frameSize;
     this.hopSize = options.hopSize;
@@ -60,9 +67,11 @@ export class StreamingAnalyzer {
       this.buffer.push(samples[i] ?? 0);
       this.received++;
       if (this.received === this.nextFrameEnd) {
-        const frame = this.analyse(this.buffer.toArray());
+        const frame = Object.freeze(this.analyse(this.buffer.toArray()));
         out.push(frame);
         this.frames.push(frame);
+        if (this.frames.length > this.retainFrames)
+          this.frames.splice(0, this.frames.length - this.retainFrames);
         this.nextFrameEnd += this.hopSize;
       }
     }
@@ -70,7 +79,7 @@ export class StreamingAnalyzer {
   }
 
   framesOut(): readonly StreamingFrame[] {
-    return this.frames;
+    return this.frames.slice();
   }
 
   reset(): void {

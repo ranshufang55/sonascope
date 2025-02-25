@@ -69,3 +69,20 @@ it('matches direct windows for every two-chunk partition and hop policy', () => 
     }
   }
 });
+
+it('bounds history while returning every new frame to the caller', () => {
+  const analyzer = new StreamingAnalyzer({
+    sampleRate: 8,
+    frameSize: 4,
+    hopSize: 4,
+    retainFrames: 2,
+  });
+  const result = analyzer.push([1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]);
+  expect(result).toHaveLength(3);
+  expect(analyzer.framesOut().map((frame) => frame.rms)).toEqual([2, 3]);
+  expect(Object.isFrozen(result[0])).toBe(true);
+  expect(analyzer.framesOut()).not.toBe(analyzer.framesOut());
+  analyzer.reset();
+  expect(analyzer.framesOut()).toEqual([]);
+  expect(analyzer.push([1, 1, 1, 1])[0]?.rms).toBe(1);
+});
