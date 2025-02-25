@@ -52,3 +52,17 @@ describe('frame', () => {
     expect(out.length).toBe(512);
   });
 });
+
+it('reconstructs overlapping rectangular frames without gain changes', () => {
+  const input = Float32Array.from([0, 1, -1, 0.5, 0.25, -0.25, 0.75, -0.75]);
+  for (const hop of [1, 2, 4]) {
+    const output = istft(stft(input, 4, hop, 'rectangular'), 4, hop, 'rectangular', input.length);
+    for (let i = 0; i < input.length; i++) expect(output[i]).toBeCloseTo(input[i]!, 5);
+  }
+});
+it('reconstructs the observable interior with a Hann window', () => {
+  const input = Float32Array.from({ length: 16 }, (_, i) => Math.sin(i));
+  const output = istft(stft(input, 8, 2, 'hann'), 8, 2, 'hann', input.length);
+  for (let i = 1; i < input.length - 1; i++) expect(output[i]).toBeCloseTo(input[i]!, 4);
+  expect(output[0]).toBe(0);
+});

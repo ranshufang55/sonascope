@@ -80,7 +80,20 @@ export function istft(
     if (win) applyWindow(arr, win);
     frames.push(arr);
   }
-  return overlapAdd(frames, frameSize, hopSize, totalLength);
+  const output = overlapAdd(frames, frameSize, hopSize, totalLength);
+  const weights = new Float64Array(output.length);
+  for (let f = 0; f < frames.length; f++) {
+    for (let i = 0; i < frameSize; i++) {
+      const position = f * hopSize + i;
+      if (position < weights.length)
+        weights[position] = weights[position]! + (win ? win[i]! ** 2 : 1);
+    }
+  }
+  for (let i = 0; i < output.length; i++) {
+    if (weights[i]! > 1e-12) output[i] = output[i]! / weights[i]!;
+    else output[i] = 0;
+  }
+  return output;
 }
 
 export function stftMagnitude(
