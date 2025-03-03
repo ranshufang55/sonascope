@@ -10,3 +10,7 @@ export function writePcm8(view: DataView, offset: number, value: number): void {
   const integer = Math.max(-128, Math.min(127, Math.round(value * 128)));
   view.setUint8(offset, integer + 128);
 }
+export function readPcm16(view: DataView, offset: number): number {
+  assertByteRange(view, offset, 2);
+  return view.getInt16(offset, true) / 32768;
+}

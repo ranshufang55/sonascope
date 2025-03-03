@@ -17,3 +17,10 @@ it('encodes PCM 8 with clipping and bounded quantization error', () => {
   }
   expect(() => pcm.writePcm8(view, 0, NaN)).toThrow();
 });
+it('decodes signed endpoints for PCM 16', () => {
+  const view = new DataView(Uint8Array.from([0, 128, 0, 0, 255, 127]).buffer);
+  expect(pcm.readPcm16(view, 0)).toBe(-1);
+  expect(pcm.readPcm16(view, 2)).toBe(0);
+  expect(pcm.readPcm16(view, 4)).toBe(1 - 1 / 32768);
+  expect(() => pcm.readPcm16(view, view.byteLength)).toThrow();
+});
