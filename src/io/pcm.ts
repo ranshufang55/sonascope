@@ -20,3 +20,14 @@ export function writePcm16(view: DataView, offset: number, value: number): void 
   const integer = Math.max(-32768, Math.min(32767, Math.round(value * 32768)));
   view.setInt16(offset, integer, true);
 }
+export function readPcm24(view: DataView, offset: number): number {
+  assertByteRange(view, offset, 3);
+  return (
+    (((view.getUint8(offset) |
+      (view.getUint8(offset + 1) << 8) |
+      (view.getUint8(offset + 2) << 16)) <<
+      8) >>
+      8) /
+    8388608
+  );
+}
