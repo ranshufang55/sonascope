@@ -49,3 +49,16 @@ export function writePcm32(view: DataView, offset: number, value: number): void 
   const integer = Math.max(-2147483648, Math.min(2147483647, Math.round(value * 2147483648)));
   view.setInt32(offset, integer, true);
 }
+export function readFloat32(view: DataView, offset: number): number {
+  assertByteRange(view, offset, 4);
+  const value = view.getFloat32(offset, true);
+  if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value)))
+    throw new RangeError('Unsupported non-finite audio sample');
+  return value;
+}
+export function writeFloat32(view: DataView, offset: number, value: number): void {
+  assertByteRange(view, offset, 4);
+  if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value)))
+    throw new RangeError('Unsupported non-finite audio sample');
+  view.setFloat32(offset, value, true);
+}

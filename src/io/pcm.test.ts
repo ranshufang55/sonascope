@@ -65,3 +65,13 @@ it('encodes PCM 32 with clipping and bounded quantization error', () => {
   }
   expect(() => pcm.writePcm32(view, 0, NaN)).toThrow();
 });
+it('round-trips IEEE float 32 and rejects non-finite payloads', () => {
+  const view = new DataView(new ArrayBuffer(4));
+  for (const value of [-1.5, -0, 0.125, 2.5]) {
+    pcm.writeFloat32(view, 0, value);
+    expect(pcm.readFloat32(view, 0)).toBe(value);
+  }
+  view.setFloat32(0, Infinity, true);
+  expect(() => pcm.readFloat32(view, 0)).toThrow();
+  expect(() => pcm.writeFloat32(view, 0, 1e100)).toThrow();
+});
