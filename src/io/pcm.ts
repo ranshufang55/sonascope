@@ -31,3 +31,11 @@ export function readPcm24(view: DataView, offset: number): number {
     8388608
   );
 }
+export function writePcm24(view: DataView, offset: number, value: number): void {
+  assertByteRange(view, offset, 3);
+  if (!Number.isFinite(value)) throw new RangeError('PCM sample must be finite');
+  const integer = Math.max(-8388608, Math.min(8388607, Math.round(value * 8388608)));
+  view.setUint8(offset, integer & 255);
+  view.setUint8(offset + 1, (integer >> 8) & 255);
+  view.setUint8(offset + 2, (integer >> 16) & 255);
+}
