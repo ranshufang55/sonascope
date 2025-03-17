@@ -56,3 +56,12 @@ it('decodes signed endpoints for PCM 32', () => {
   expect(pcm.readPcm32(view, 8)).toBe(1 - 1 / 2147483648);
   expect(() => pcm.readPcm32(view, view.byteLength)).toThrow();
 });
+it('encodes PCM 32 with clipping and bounded quantization error', () => {
+  const view = new DataView(new ArrayBuffer(4));
+  for (const sample of [-2, -1, -0.5, 0, 0.125, 0.5, 1, 2]) {
+    pcm.writePcm32(view, 0, sample);
+    const expected = Math.max(-1, Math.min(1 - 1 / 2147483648, sample));
+    expect(Math.abs(pcm.readPcm32(view, 0) - expected)).toBeLessThanOrEqual(1 / 2147483648);
+  }
+  expect(() => pcm.writePcm32(view, 0, NaN)).toThrow();
+});
