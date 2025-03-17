@@ -49,3 +49,10 @@ it('encodes PCM 24 with clipping and bounded quantization error', () => {
   }
   expect(() => pcm.writePcm24(view, 0, NaN)).toThrow();
 });
+it('decodes signed endpoints for PCM 32', () => {
+  const view = new DataView(Uint8Array.from([0, 0, 0, 128, 0, 0, 0, 0, 255, 255, 255, 127]).buffer);
+  expect(pcm.readPcm32(view, 0)).toBe(-1);
+  expect(pcm.readPcm32(view, 4)).toBe(0);
+  expect(pcm.readPcm32(view, 8)).toBe(1 - 1 / 2147483648);
+  expect(() => pcm.readPcm32(view, view.byteLength)).toThrow();
+});

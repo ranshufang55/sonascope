@@ -39,3 +39,7 @@ export function writePcm24(view: DataView, offset: number, value: number): void 
   view.setUint8(offset + 1, (integer >> 8) & 255);
   view.setUint8(offset + 2, (integer >> 16) & 255);
 }
+export function readPcm32(view: DataView, offset: number): number {
+  assertByteRange(view, offset, 4);
+  return view.getInt32(offset, true) / 2147483648;
+}
