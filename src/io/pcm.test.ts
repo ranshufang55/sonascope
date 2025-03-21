@@ -75,3 +75,13 @@ it('round-trips IEEE float 32 and rejects non-finite payloads', () => {
   expect(() => pcm.readFloat32(view, 0)).toThrow();
   expect(() => pcm.writeFloat32(view, 0, 1e100)).toThrow();
 });
+it('round-trips IEEE float 64 and rejects non-finite payloads', () => {
+  const view = new DataView(new ArrayBuffer(8));
+  for (const value of [-1.5, -0, 0.125, 2.5]) {
+    pcm.writeFloat64(view, 0, value);
+    expect(pcm.readFloat64(view, 0)).toBe(value);
+  }
+  view.setFloat64(0, Infinity, true);
+  expect(() => pcm.readFloat64(view, 0)).toThrow();
+  expect(() => pcm.writeFloat64(view, 0, 1e100)).toThrow();
+});
