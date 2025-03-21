@@ -33,3 +33,13 @@ it('pins the complete WAVE metadata schema', () => {
     dataBytes: 8,
   });
 });
+
+it('deinterleaves stereo PCM frames in channel order', () => {
+  const view = fixture(16, 2, 2);
+  [-32768, 16384, 8192, -16384].forEach((value, index) =>
+    view.setInt16(44 + index * 2, value, true),
+  );
+  const result = wav.decodeWav(view);
+  expect(Array.from(result.getChannel(0))).toEqual([-1, 0.25]);
+  expect(Array.from(result.getChannel(1))).toEqual([0.5, -0.5]);
+});
