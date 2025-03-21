@@ -1,6 +1,6 @@
 import { AudioBuffer } from '../core/buffer.js';
 import { assertSampleRate, MAX_SAMPLES_PER_BUFFER } from '../core/sample-rate.js';
-import { asDataView, type ByteSource } from './bytes.js';
+import { asDataView, writeFourCC, type ByteSource } from './bytes.js';
 import { scanRiff } from './riff.js';
 import * as pcm from './pcm.js';
 
@@ -80,4 +80,50 @@ export function decodeWav(input: ByteSource): AudioBuffer {
     }
   }
   return output;
+}
+
+export function encodeWav(audio: AudioBuffer, encoding: WavEncoding = 'pcm16'): Uint8Array {
+  const encodings = ['pcm8', 'pcm16', 'pcm24', 'pcm32', 'float32', 'float64'];
+  if (!encodings.includes(encoding)) throw new RangeError('Unsupported WAVE encoding');
+  assertSampleRate(audio.sampleRate);
+  if (!Number.isInteger(audio.sampleRate))
+    throw new RangeError('WAVE sampleRate must be an integer');
+  if (audio.numChannels > 32 || audio.numSamples * audio.numChannels > MAX_SAMPLES_PER_BUFFER)
+    throw new RangeError('Audio exceeds WAVE memory or channel limits');
+  const floating = encoding.startsWith('float');
+  const bits = Number(encoding.replace(/[^0-9]/g, ''));
+  const align = (audio.numChannels * bits) / 8;
+  const bytes = audio.numSamples * align;
+  const view = new DataView(new ArrayBuffer(44 + bytes + (bytes % 2)));
+  writeFourCC(view, 0, 'RIFF');
+  view.setUint32(4, view.byteLength - 8, true);
+  writeFourCC(view, 8, 'WAVE');
+  writeFourCC(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, floating ? 3 : 1, true);
+  view.setUint16(22, audio.numChannels, true);
+  view.setUint32(24, audio.sampleRate, true);
+  view.setUint32(28, audio.sampleRate * align, true);
+  view.setUint16(32, align, true);
+  view.setUint16(34, bits, true);
+  writeFourCC(view, 36, 'data');
+  view.setUint32(40, bytes, true);
+  const writers = {
+    pcm8: pcm.writePcm8,
+    pcm16: pcm.writePcm16,
+    pcm24: pcm.writePcm24,
+    pcm32: pcm.writePcm32,
+    float32: pcm.writeFloat32,
+    float64: pcm.writeFloat64,
+  };
+  for (let frame = 0; frame < audio.numSamples; frame++) {
+    for (let channel = 0; channel < audio.numChannels; channel++) {
+      writers[encoding](
+        view,
+        44 + frame * align + (channel * bits) / 8,
+        audio.getChannel(channel)[frame]!,
+      );
+    }
+  }
+  return new Uint8Array(view.buffer);
 }

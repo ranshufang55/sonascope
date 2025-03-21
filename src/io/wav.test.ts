@@ -1,3 +1,4 @@
+import { AudioBuffer } from '../core/buffer.js';
 import { it, expect } from 'vitest';
 import * as wav from './wav.js';
 import { writeFourCC } from './bytes.js';
@@ -42,4 +43,21 @@ it('deinterleaves stereo PCM frames in channel order', () => {
   const result = wav.decodeWav(view);
   expect(Array.from(result.getChannel(0))).toEqual([-1, 0.25]);
   expect(Array.from(result.getChannel(1))).toEqual([0.5, -0.5]);
+});
+
+it('round-trips every encoding and preserves sliced byte inputs', () => {
+  const audio = new AudioBuffer(8000, 2, 3, [
+    new Float32Array([-0.5, 0, 0.5]),
+    new Float32Array([0.25, -0.25, 0]),
+  ]);
+  for (const encoding of ['pcm8', 'pcm16', 'pcm24', 'pcm32', 'float32', 'float64'] as const) {
+    const encoded = wav.encodeWav(audio, encoding);
+    const wrapped = new Uint8Array(encoded.length + 8);
+    wrapped.set(encoded, 4);
+    const restored = wav.decodeWav(wrapped.subarray(4, 4 + encoded.length));
+    expect(restored.sampleRate).toBe(8000);
+    expect(restored.numChannels).toBe(2);
+    for (let channel = 0; channel < 2; channel++)
+      expect(restored.getChannel(channel)).toEqual(audio.getChannel(channel));
+  }
 });
