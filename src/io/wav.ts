@@ -27,12 +27,27 @@ export function parseWav(input: ByteSource): WavInfo {
   const data = payloads[0]!;
   if (format.length < 16) throw new RangeError('Truncated WAVE format');
   const offset = format.offset;
-  const tag = view.getUint16(offset, true);
+  let tag = view.getUint16(offset, true);
   const channels = view.getUint16(offset + 2, true);
   const sampleRate = view.getUint32(offset + 4, true);
   const byteRate = view.getUint32(offset + 8, true);
   const blockAlign = view.getUint16(offset + 12, true);
   const bitsPerSample = view.getUint16(offset + 14, true);
+  if (tag === 65534) {
+    if (
+      format.length < 40 ||
+      view.getUint16(offset + 16, true) < 22 ||
+      18 + view.getUint16(offset + 16, true) > format.length
+    )
+      throw new RangeError('Truncated extensible WAVE format');
+    const validBits = view.getUint16(offset + 18, true);
+    if (validBits !== 0 && validBits !== bitsPerSample)
+      throw new RangeError('Packed extensible bit depths are unsupported');
+    const suffix = [0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113];
+    if (suffix.some((value, index) => view.getUint8(offset + 26 + index) !== value))
+      throw new RangeError('Unknown extensible WAVE subformat');
+    tag = view.getUint16(offset + 24, true);
+  }
   assertSampleRate(sampleRate);
   if (channels < 1 || channels > 32) throw new RangeError('WAVE channel count must be in [1,32]');
   if (tag !== 1 && tag !== 3) throw new RangeError('Unsupported WAVE encoding');

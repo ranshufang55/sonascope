@@ -61,3 +61,20 @@ it('round-trips every encoding and preserves sliced byte inputs', () => {
       expect(restored.getChannel(channel)).toEqual(audio.getChannel(channel));
   }
 });
+
+it('reads standard WAVE_FORMAT_EXTENSIBLE PCM subformats', () => {
+  const source = new Uint8Array(fixture().buffer);
+  const bytes = new Uint8Array(source.length + 24);
+  bytes.set(source.subarray(0, 36));
+  bytes.set(source.subarray(36), 60);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(4, bytes.length - 8, true);
+  view.setUint32(16, 40, true);
+  view.setUint16(20, 65534, true);
+  view.setUint16(36, 22, true);
+  view.setUint16(38, 16, true);
+  bytes.set([1, 0, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113], 44);
+  expect(wav.parseWav(view).format).toBe('pcm');
+  view.setUint8(59, 0);
+  expect(() => wav.parseWav(view)).toThrow(/subformat/);
+});
