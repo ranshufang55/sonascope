@@ -1,3 +1,4 @@
+import { assertFinite, assertFiniteSamples, assertNonNegative } from './validation.js';
 // Magnitude, power, and dB conversions for FFT bins.
 
 import type { ComplexArray } from './fft.js';
@@ -25,24 +26,30 @@ export function powerSpectrum(input: ComplexArray): Float32Array {
 }
 
 export function linToDb(value: number, floor: number = -120): number {
-  if (value <= 0) return floor;
-  return 20 * Math.log10(value);
+  assertNonNegative(value, 'value');
+  assertFinite(floor, 'floor');
+  return value === 0 ? floor : Math.max(floor, 20 * Math.log10(value));
 }
 
 export function toDb(magnitudes: ArrayLike<number>, floor: number = -120): Float32Array {
+  assertFiniteSamples(magnitudes);
+  assertFinite(floor, 'floor');
   const out = new Float32Array(magnitudes.length);
   for (let i = 0; i < magnitudes.length; i++) {
     const v = magnitudes[i] ?? 0;
-    out[i] = v > 0 ? 20 * Math.log10(v) : floor;
+    out[i] = linToDb(v, floor);
   }
   return out;
 }
 
 export function toDbPower(powerVals: ArrayLike<number>, floor: number = -120): Float32Array {
+  assertFiniteSamples(powerVals);
+  assertFinite(floor, 'floor');
   const out = new Float32Array(powerVals.length);
   for (let i = 0; i < powerVals.length; i++) {
     const v = powerVals[i] ?? 0;
-    out[i] = v > 0 ? 10 * Math.log10(v) : floor;
+    assertNonNegative(v, 'power');
+    out[i] = v === 0 ? floor : Math.max(floor, 10 * Math.log10(v));
   }
   return out;
 }

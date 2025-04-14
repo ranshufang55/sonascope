@@ -54,3 +54,14 @@ it('includes every nonnegative bin for odd, even, singleton and empty spectra', 
     expect(halfSpectrum(input)).toEqual(input.slice(0, size === 0 ? 0 : Math.floor(size / 2) + 1));
   }
 });
+
+it('applies the same lower floor to scalar, magnitude and power conversions', () => {
+  expect(linToDb(1e-12, -60)).toBe(-60);
+  expect(Array.from(toDb([0, 1e-12, 1], -60))).toEqual([-60, -60, 0]);
+  expect(Array.from(toDbPower([0, 1e-12, 1], -60))).toEqual([-60, -60, 0]);
+  for (const value of [-1, NaN, Infinity]) {
+    expect(() => linToDb(value)).toThrow();
+    expect(() => toDb([value])).toThrow();
+    expect(() => toDbPower([value])).toThrow();
+  }
+});
