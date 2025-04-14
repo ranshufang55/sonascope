@@ -40,10 +40,17 @@ describe('spectrum', () => {
     expect(linToDb(0.5)).toBeCloseTo(toDb([0.5])[0] ?? 0, 4);
   });
 
-  it('halfSpectrum returns the lower half of the spectrum', () => {
+  it('halfSpectrum returns nonnegative frequencies including Nyquist', () => {
     const m = new Float32Array(16).map((_, i) => i);
     const h = halfSpectrum(m);
-    expect(h.length).toBe(8);
-    expect(Array.from(h)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(h.length).toBe(9);
+    expect(Array.from(h)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
   });
+});
+
+it('includes every nonnegative bin for odd, even, singleton and empty spectra', () => {
+  for (let size = 0; size < 17; size++) {
+    const input = Float32Array.from({ length: size }, (_, i) => i);
+    expect(halfSpectrum(input)).toEqual(input.slice(0, size === 0 ? 0 : Math.floor(size / 2) + 1));
+  }
 });

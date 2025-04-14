@@ -48,7 +48,7 @@ export function toDbPower(powerVals: ArrayLike<number>, floor: number = -120): F
 }
 
 export function halfSpectrum(magnitudes: ArrayLike<number>): Float32Array {
-  const n = Math.floor((magnitudes.length + 1) / 2);
+  const n = magnitudes.length === 0 ? 0 : Math.floor(magnitudes.length / 2) + 1;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) out[i] = magnitudes[i] ?? 0;
   return out;
