@@ -10,7 +10,7 @@ import { RingBuffer } from './ring.js';
 import { rms, zeroCrossingRate } from './features-time.js';
 import { spectralCentroid, spectralFlatness, spectralRolloff } from './features-spectral.js';
 import { fft, MAX_FFT_SIZE } from './fft.js';
-import { magnitude } from './spectrum.js';
+import { magnitude, halfSpectrum } from './spectrum.js';
 
 export interface StreamingFrame {
   rms: number;
@@ -91,7 +91,7 @@ export class StreamingAnalyzer {
 
   private analyse(window: Float32Array): StreamingFrame {
     const N = this.frameSize;
-    const mag = magnitude(fft(window));
+    const mag = halfSpectrum(magnitude(fft(window)));
     return {
       rms: rms(window),
       zcr: zeroCrossingRate(window, this.sampleRate),

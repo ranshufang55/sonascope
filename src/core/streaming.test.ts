@@ -86,3 +86,11 @@ it('bounds history while returning every new frame to the caller', () => {
   expect(analyzer.framesOut()).toEqual([]);
   expect(analyzer.push([1, 1, 1, 1])[0]?.rms).toBe(1);
 });
+
+it('locates a real tone at its frequency instead of the mirrored-spectrum midpoint', () => {
+  const analyzer = new StreamingAnalyzer({ sampleRate: 8000, frameSize: 64, hopSize: 64 });
+  const signal = Float32Array.from({ length: 64 }, (_, i) =>
+    Math.sin((2 * Math.PI * 1000 * i) / 8000),
+  );
+  expect(analyzer.push(signal)[0]?.centroid).toBeCloseTo(1000, 2);
+});
