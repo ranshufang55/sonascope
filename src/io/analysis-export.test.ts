@@ -38,3 +38,17 @@ it('pins every serialized root and frame field', () => {
   expect(data.frames[0].magnitude).toEqual([0.25, 0.5, 0.25]);
   expect(serializeAnalysis(analysis)).toBe(serializeAnalysis(analysis));
 });
+
+it('exports stable frame columns and rejects corrupt numeric cells', async () => {
+  const { analysisToCsv } = await import('./analysis-export.js');
+  const analysis = analyzeAudio(new AudioBuffer(8, 1, 4), {
+    fftSize: 4,
+    hopSize: 4,
+    window: 'rectangular',
+  });
+  expect(analysisToCsv(analysis)).toBe(
+    'index,startSample,sampleCount,timeSeconds,rms,peak,centroid,rolloff,flatness\n0,0,4,0,0,0,0,0,0\n',
+  );
+  analysis.frames[0]!.rms = NaN;
+  expect(() => analysisToCsv(analysis)).toThrow();
+});

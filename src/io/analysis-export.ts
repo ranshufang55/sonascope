@@ -50,3 +50,26 @@ export function serializeAnalysis(analysis: AudioAnalysis): string {
     ) + '\n'
   );
 }
+
+export function analysisToCsv(analysis: AudioAnalysis): string {
+  const headers = [
+    'index',
+    'startSample',
+    'sampleCount',
+    'timeSeconds',
+    'rms',
+    'peak',
+    'centroid',
+    'rolloff',
+    'flatness',
+  ] as const;
+  const rows = analysis.frames.map((frame) =>
+    headers
+      .map((key) => {
+        assertFinite(frame[key], key);
+        return String(frame[key]);
+      })
+      .join(','),
+  );
+  return [headers.join(','), ...rows].join('\n') + '\n';
+}
