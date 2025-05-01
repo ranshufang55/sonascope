@@ -19,7 +19,11 @@
       "types": "./dist/io/index.d.ts",
       "import": "./dist/io/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    }
   },
   "files": [
     "dist",
@@ -57,5 +61,10 @@
     "prettier": "3.3.3",
     "typescript": "5.6.3",
     "vitest": "2.1.9"
+  },
+  "author": "Huang Zeyao",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranshufang55/sonascope.git"
   }
 }
