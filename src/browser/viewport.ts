@@ -16,6 +16,10 @@ export class Viewport {
   get range(): ViewRange {
     return { start: this.start, end: this.end };
   }
+  pan(delta: number): ViewRange {
+    assertFinite(delta, 'delta');
+    return this.set(this.start + delta, this.end + delta);
+  }
   reset(): ViewRange {
     this.start = 0;
     this.end = this.length;
