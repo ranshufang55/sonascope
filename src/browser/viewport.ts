@@ -16,6 +16,15 @@ export class Viewport {
   get range(): ViewRange {
     return { start: this.start, end: this.end };
   }
+  zoom(factor: number, anchor = 0.5): ViewRange {
+    assertFinite(factor, 'factor');
+    assertInRange(anchor, 0, 1, 'anchor');
+    if (factor <= 0) throw new RangeError('Zoom factor must be positive');
+    const width = this.end - this.start;
+    const next = Math.min(this.length, Math.max(1, width / factor));
+    const point = this.start + width * anchor;
+    return this.set(point - next * anchor, point + next * (1 - anchor));
+  }
   pan(delta: number): ViewRange {
     assertFinite(delta, 'delta');
     return this.set(this.start + delta, this.end + delta);

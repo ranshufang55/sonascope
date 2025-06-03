@@ -18,3 +18,13 @@ it('pans reversibly away from bounds and clamps at both edges', () => {
   expect(v.pan(1000)).toEqual({ start: 80, end: 100 });
   expect(() => v.pan(NaN)).toThrow();
 });
+it('keeps all zoom anchors stable and supports reverse zoom', () => {
+  for (const anchor of [0, 0.25, 0.5, 0.75, 1]) {
+    const v = new Viewport(100);
+    const r = v.zoom(2, anchor);
+    expect(r.start + 50 * anchor).toBeCloseTo(100 * anchor);
+    expect(v.zoom(0.5, anchor)).toEqual({ start: 0, end: 100 });
+  }
+  for (const factor of [0, -1, Infinity, NaN])
+    expect(() => new Viewport(100).zoom(factor)).toThrow();
+});
