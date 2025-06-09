@@ -28,3 +28,11 @@ it('keeps all zoom anchors stable and supports reverse zoom', () => {
   for (const factor of [0, -1, Infinity, NaN])
     expect(() => new Viewport(100).zoom(factor)).toThrow();
 });
+it('maps both edges and interior points without exposing mutable state', () => {
+  const v = new Viewport(100);
+  v.set(20, 60);
+  const copy = v.range;
+  copy.start = 999;
+  expect([-10, 0, 50, 100, 110].map((x) => v.sampleAtPixel(x, 100))).toEqual([20, 20, 40, 60, 60]);
+  expect(() => v.sampleAtPixel(0, 0)).toThrow();
+});

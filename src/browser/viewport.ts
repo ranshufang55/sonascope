@@ -25,6 +25,12 @@ export class Viewport {
     const point = this.start + width * anchor;
     return this.set(point - next * anchor, point + next * (1 - anchor));
   }
+  sampleAtPixel(x: number, width: number): number {
+    assertFinite(x, 'x');
+    assertFinite(width, 'width');
+    if (width <= 0) throw new RangeError('Pixel width must be positive');
+    return this.start + Math.max(0, Math.min(1, x / width)) * (this.end - this.start);
+  }
   pan(delta: number): ViewRange {
     assertFinite(delta, 'delta');
     return this.set(this.start + delta, this.end + delta);
