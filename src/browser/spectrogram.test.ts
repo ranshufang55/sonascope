@@ -1,0 +1,31 @@
+import { it, expect } from 'vitest';
+import { spectrogramPixels } from './spectrogram.js';
+it('pins time direction, frequency direction and every output color channel', () => {
+  expect(
+    Array.from(
+      spectrogramPixels(
+        [
+          [-100, 0],
+          [0, -100],
+        ],
+        2,
+        2,
+        { palette: 'mono' },
+      ),
+    ),
+  ).toEqual([255, 255, 255, 255, 0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255]);
+  expect(
+    Array.from(
+      spectrogramPixels(
+        [
+          [-100, 0],
+          [-100, -100],
+        ],
+        1,
+        1,
+        { palette: 'mono' },
+      ),
+    ),
+  ).toEqual([255, 255, 255, 255]);
+  expect(() => spectrogramPixels([[0], [0, 1]], 2, 2)).toThrow();
+});
