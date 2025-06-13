@@ -85,6 +85,18 @@ export class AudioSession {
     source.start();
     this.status = 'playing';
   }
+  async pause(): Promise<void> {
+    if (this.status !== 'playing') return;
+    const generation = this.generation;
+    await this.context!.suspend();
+    if (generation === this.generation) this.status = 'paused';
+  }
+  async resume(): Promise<void> {
+    if (this.status !== 'paused') return;
+    const generation = this.generation;
+    await this.context!.resume();
+    if (generation === this.generation) this.status = 'playing';
+  }
   async close(): Promise<void> {
     if (this.status === 'closed') return;
     this.stop();

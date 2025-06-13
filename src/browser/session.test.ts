@@ -57,3 +57,17 @@ it('creates audio resources only when playback begins and cleans them exactly on
   expect(session.state).toBe('closed');
   await expect(session.play(new AudioBuffer(8000, 1, 8))).rejects.toThrow('closed');
 });
+it('pauses and resumes without constructing a second source', async () => {
+  const session = setup();
+  await session.play(new AudioBuffer(8000, 1, 8));
+  await session.pause();
+  expect(session.state).toBe('paused');
+  await session.resume();
+  expect(session.state).toBe('playing');
+  expect(contexts[0]!.nodes).toHaveLength(3);
+  expect(contexts[0]!.suspend).toHaveBeenCalledTimes(1);
+  session.stop();
+  await session.resume();
+  expect(session.state).toBe('idle');
+  await session.close();
+});
