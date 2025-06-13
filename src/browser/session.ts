@@ -114,6 +114,21 @@ export class AudioSession {
       throw error;
     }
   }
+  setVolume(volume: number): void {
+    assertInRange(volume, 0, 1, 'volume');
+    this.volume = volume;
+    if (this.gain && this.status !== 'microphone') this.gain.gain.value = volume;
+  }
+  readTimeDomain(): Float32Array {
+    const out = new Float32Array(this.fftSize);
+    this.analyser?.getFloatTimeDomainData(out);
+    return out;
+  }
+  readSpectrum(): Float32Array {
+    const out = new Float32Array(this.fftSize / 2).fill(-Infinity);
+    this.analyser?.getFloatFrequencyData(out);
+    return out;
+  }
   async pause(): Promise<void> {
     if (this.status !== 'playing') return;
     const generation = this.generation;

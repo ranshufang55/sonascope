@@ -85,3 +85,18 @@ it('mutes microphone monitoring and releases every track on stop', async () => {
   expect(session.state).toBe('idle');
   await session.close();
 });
+it('provides independent live buffers and keeps microphone gain muted after volume changes', async () => {
+  const session = setup();
+  expect(session.readSpectrum().every((v) => v === -Infinity)).toBe(true);
+  vi.stubGlobal('navigator', {
+    mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) },
+  });
+  await session.microphone();
+  session.setVolume(0.8);
+  expect(contexts[0]!.nodes[1]!.gain.value).toBe(0);
+  expect(session.readTimeDomain()).toEqual(new Float32Array(64).fill(0.25));
+  expect(session.readSpectrum()).toEqual(new Float32Array(32).fill(-20));
+  await session.play(new AudioBuffer(8000, 1, 8));
+  expect(contexts[0]!.nodes[1]!.gain.value).toBe(0.8);
+  await session.close();
+});
