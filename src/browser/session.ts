@@ -85,6 +85,35 @@ export class AudioSession {
     source.start();
     this.status = 'playing';
   }
+  async microphone(): Promise<void> {
+    const context = this.ensureContext();
+    this.stop();
+    const generation = this.generation;
+    if (!globalThis.navigator?.mediaDevices?.getUserMedia)
+      throw new Error('Microphone capture needs a secure context and permission');
+    let stream: MediaStream | undefined;
+    try {
+      await context.resume();
+      if (generation !== this.generation) return;
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        video: false,
+      });
+      if (generation !== this.generation) {
+        for (const track of stream.getTracks()) track.stop();
+        return;
+      }
+      const source = context.createMediaStreamSource(stream);
+      source.connect(this.analyser!);
+      this.gain!.gain.value = 0;
+      this.stream = stream;
+      this.source = source;
+      this.status = 'microphone';
+    } catch (error) {
+      for (const track of stream?.getTracks() ?? []) track.stop();
+      throw error;
+    }
+  }
   async pause(): Promise<void> {
     if (this.status !== 'playing') return;
     const generation = this.generation;

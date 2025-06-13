@@ -71,3 +71,17 @@ it('pauses and resumes without constructing a second source', async () => {
   expect(session.state).toBe('idle');
   await session.close();
 });
+it('mutes microphone monitoring and releases every track on stop', async () => {
+  const session = setup();
+  const stop = vi.fn();
+  vi.stubGlobal('navigator', {
+    mediaDevices: { getUserMedia: vi.fn(async () => ({ getTracks: () => [{ stop }, { stop }] })) },
+  });
+  await session.microphone();
+  expect(session.state).toBe('microphone');
+  expect(contexts[0]!.nodes[1]!.gain.value).toBe(0);
+  session.stop();
+  expect(stop).toHaveBeenCalledTimes(2);
+  expect(session.state).toBe('idle');
+  await session.close();
+});
