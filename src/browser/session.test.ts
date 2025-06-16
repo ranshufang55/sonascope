@@ -100,3 +100,25 @@ it('provides independent live buffers and keeps microphone gain muted after volu
   expect(contexts[0]!.nodes[1]!.gain.value).toBe(0.8);
   await session.close();
 });
+it('stops late microphone grants after cancellation without connecting a source', async () => {
+  const session = setup();
+  let grant!: (stream: unknown) => void;
+  const stop = vi.fn();
+  vi.stubGlobal('navigator', {
+    mediaDevices: {
+      getUserMedia: () =>
+        new Promise((resolve) => {
+          grant = resolve;
+        }),
+    },
+  });
+  const pending = session.microphone();
+  await Promise.resolve();
+  session.stop();
+  grant({ getTracks: () => [{ stop }] });
+  await pending;
+  expect(stop).toHaveBeenCalledTimes(1);
+  expect(contexts[0]!.nodes).toHaveLength(2);
+  expect(session.state).toBe('idle');
+  await session.close();
+});
