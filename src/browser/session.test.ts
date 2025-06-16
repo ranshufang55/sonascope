@@ -122,3 +122,21 @@ it('stops late microphone grants after cancellation without connecting a source'
   expect(session.state).toBe('idle');
   await session.close();
 });
+it('does not create a source when close interrupts an outstanding context resume', async () => {
+  const session = setup();
+  await session.play(new AudioBuffer(8000, 1, 8));
+  session.stop();
+  let finish!: () => void;
+  contexts[0]!.resume.mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const pending = session.play(new AudioBuffer(8000, 1, 8));
+  await session.close();
+  finish();
+  await pending;
+  expect(contexts[0]!.nodes).toHaveLength(3);
+  expect(session.state).toBe('closed');
+});
