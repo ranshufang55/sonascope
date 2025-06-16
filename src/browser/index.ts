@@ -10,3 +10,5 @@ export { drawSpectrum, spectrumColumns } from './spectrum.js';
 export type { SpectrumOptions } from './spectrum.js';
 export { drawSpectrogram, spectrogramPixels } from './spectrogram.js';
 export type { SpectrogramOptions } from './spectrogram.js';
+export { AudioSession } from './session.js';
+export type { AudioSessionOptions, SessionState } from './session.js';
