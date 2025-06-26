@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="A local audio workbench for waveform, spectrum and spectrogram exploration."
+    />
+    <title>Sonascope · Audio workbench</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="./" class="brand"
+        ><span class="brand-mark" aria-hidden="true">◒</span> sonascope<span class="version"
+          >0.1</span
+        ></a
+      ><span class="privacy"><span class="status-dot"></span> Audio stays in your browser</span
+      ><a class="source-link" href="https://github.com/ranshufang55/sonascope">View source ↗</a>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">AUDIO EXPLORATION / 001</p>
+          <h1>See what you hear<span>.</span></h1>
+          <p class="lede">
+            A closer look at sound. Explore its shape, frequencies, and the details in between.
+          </p>
+        </div>
+        <div class="intro-note">
+          <span class="tiny-label">BUILT BY</span><strong>Huang Zeyao</strong
+          ><span>Sun Yat-sen University</span>
+        </div>
+      </section>
+      <section class="workspace" aria-label="Audio workbench">
+        <aside class="sidebar">
+          <div class="side-section">
+            <h2>01 <span>Source</span></h2>
+            <label class="upload" for="audio-file"
+              ><span class="upload-icon" aria-hidden="true">＋</span
+              ><strong>Open an audio file</strong><span>WAV, MP3, OGG · up to 30 sec</span
+              ><input id="audio-file" type="file" accept="audio/*,.wav"
+            /></label>
+            <p class="helper">Or start with a synthetic signal</p>
+            <div class="signal-grid">
+              <button data-signal="harmonics" class="signal active" aria-pressed="true">
+                Harmonics</button
+              ><button data-signal="chirp" class="signal" aria-pressed="false">Sweep</button
+              ><button data-signal="pulse" class="signal" aria-pressed="false">Pulse train</button
+              ><button data-signal="noise" class="signal" aria-pressed="false">White noise</button>
+            </div>
+            <button id="microphone" class="mic-button">● Use microphone</button>
+          </div>
+          <div class="side-section">
+            <h2>02 <span>Analysis</span></h2>
+            <label class="field"
+              >FFT size<select id="fft-size">
+                <option>256</option>
+                <option>512</option>
+                <option selected>1024</option>
+                <option>2048</option>
+                <option>4096</option>
+              </select></label
+            ><label class="field"
+              >Window<select id="window">
+                <option value="hann">Hann</option>
+                <option value="hamming">Hamming</option>
+                <option value="blackman">Blackman</option>
+                <option value="rectangular">Rectangular</option>
+              </select></label
+            ><label class="field"
+              >Dynamic range<select id="db-floor">
+                <option value="-60">60 dB</option>
+                <option value="-80">80 dB</option>
+                <option value="-100" selected>100 dB</option>
+                <option value="-120">120 dB</option>
+              </select></label
+            ><label class="field"
+              >Color palette<select id="palette">
+                <option value="ocean">Ocean</option>
+                <option value="ember">Ember</option>
+                <option value="mono">Monochrome</option>
+              </select></label
+            >
+          </div>
+          <div class="side-section export-section">
+            <h2>03 <span>Export</span></h2>
+            <div class="export-grid">
+              <button id="export-json">JSON ↗</button><button id="export-csv">CSV ↗</button
+              ><button id="export-wav">WAV ↗</button><button id="export-png">Image ↗</button>
+            </div>
+            <p class="helper">Analysis and audio exports use the full selected recording.</p>
+          </div>
+        </aside>
+        <div class="visuals">
+          <div class="transport">
+            <div class="recording">
+              <span class="file-icon" aria-hidden="true">≋</span>
+              <div>
+                <h2 id="source-title">Harmonic study</h2>
+                <span id="source-detail">Synthetic signal · 48 kHz · mono</span>
+              </div>
+            </div>
+            <div class="playback">
+              <button id="play" class="play-button" aria-label="Play audio">
+                ▶ <span>Play</span></button
+              ><button id="stop" aria-label="Stop audio">■</button
+              ><label class="volume-label"
+                >Volume<input
+                  id="volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value="0.2"
+                  aria-label="Playback volume"
+              /></label>
+            </div>
+          </div>
+          <div class="metrics">
+            <div><span>DURATION</span><strong id="duration">—</strong></div>
+            <div><span>RMS LEVEL</span><strong id="rms">—</strong></div>
+            <div><span>CENTROID</span><strong id="centroid">—</strong></div>
+            <div><span>FREQUENCY RESOLUTION</span><strong id="resolution">—</strong></div>
+          </div>
+          <section class="plot-panel">
+            <div class="plot-title">
+              <h3><span class="plot-dot"></span>Waveform</h3>
+              <div class="plot-tools">
+                <button id="pan-left" aria-label="Pan left">←</button
+                ><button id="zoom-in" aria-label="Zoom in">＋</button
+                ><button id="zoom-out" aria-label="Zoom out">−</button
+                ><button id="pan-right" aria-label="Pan right">→</button
+                ><button id="reset-view">Fit</button>
+              </div>
+            </div>
+            <div class="plot-body">
+              <span class="axis-y">AMPLITUDE</span
+              ><canvas
+                id="waveform"
+                role="img"
+                aria-label="Audio waveform; use zoom and pan controls to explore"
+              ></canvas>
+            </div>
+            <div class="axis-x">
+              <span id="range-start">0.00 s</span
+              ><span id="range-note">SCROLL TO ZOOM · DRAG TO PAN</span
+              ><span id="range-end">3.00 s</span>
+            </div>
+          </section>
+          <div class="lower-plots">
+            <section class="plot-panel spectrum-panel">
+              <div class="plot-title">
+                <h3><span class="plot-dot violet"></span>Spectrum</h3>
+                <span class="plot-badge" id="spectrum-mode">FIRST FRAME</span>
+              </div>
+              <div class="plot-body">
+                <span class="axis-y">dBFS</span
+                ><canvas id="spectrum" role="img" aria-label="Magnitude spectrum"></canvas>
+              </div>
+              <div class="axis-x"><span>0 Hz</span><span id="nyquist">24 kHz</span></div>
+            </section>
+            <section class="plot-panel spectrogram-panel">
+              <div class="plot-title">
+                <h3><span class="plot-dot blue"></span>Spectrogram</h3>
+                <div class="color-key">
+                  <span id="legend-floor">−100</span><i></i><span>0 dB</span>
+                </div>
+              </div>
+              <div class="plot-body">
+                <span class="axis-y">FREQUENCY</span
+                ><canvas
+                  id="spectrogram"
+                  role="img"
+                  aria-label="Spectrogram with time increasing right and frequency increasing upward"
+                ></canvas>
+              </div>
+              <div class="axis-x">
+                <span>0 s</span><span>TIME →</span><span id="spectrogram-end">3 s</span>
+              </div>
+            </section>
+          </div>
+          <div class="statusbar">
+            <p id="status" role="status" aria-live="polite">Preparing the workbench…</p>
+            <span id="frame-count">— frames</span>
+          </div>
+        </div>
+      </section>
+      <footer>
+        <span>Sound, made visible.</span
+        ><span>Local processing · No account required · MIT licensed</span>
+      </footer>
+    </main>
+    <script type="module" src="../dist/demo/main.js"></script>
+  </body>
+</html>
