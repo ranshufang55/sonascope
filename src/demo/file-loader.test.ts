@@ -1,0 +1,15 @@
+import { it, expect } from 'vitest';
+import { loadAudioFile } from './file-loader.js';
+import { encodeWav } from '../io/wav.js';
+import { AudioBuffer } from '../core/buffer.js';
+it('opens local WAV bytes and rejects empty or oversized recordings', async () => {
+  const input = new AudioBuffer(8000, 1, 8, [new Float32Array(8).fill(0.5)]);
+  const bytes = encodeWav(input);
+  const file = { size: bytes.byteLength, arrayBuffer: async () => bytes } as File;
+  expect((await loadAudioFile(file)).getChannel(0)).toEqual(input.getChannel(0));
+  await expect(loadAudioFile({ size: 21 * 1024 * 1024 } as File)).rejects.toThrow('20 MB');
+  const empty = encodeWav(new AudioBuffer(8000, 1, 0));
+  await expect(
+    loadAudioFile({ size: empty.byteLength, arrayBuffer: async () => empty } as File),
+  ).rejects.toThrow('empty');
+});
