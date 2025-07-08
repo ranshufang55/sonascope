@@ -1,3 +1,4 @@
+import { loadAudioFile } from './file-loader.js';
 import { analyzeAudio, type AudioAnalysis } from '../analysis.js';
 import type { AudioBuffer } from '../core/buffer.js';
 import { downmixToMono } from '../core/downmix.js';
@@ -20,6 +21,7 @@ let samples = downmixToMono(audio).getChannel(0);
 let pyramid: Pyramid = buildPyramid(samples);
 let viewport = new Viewport(samples.length);
 let analysis: AudioAnalysis;
+let loadGeneration = 0;
 let sourceName = SIGNAL_LABELS.harmonics;
 const wave = element<HTMLCanvasElement>('waveform'),
   spectrum = element<HTMLCanvasElement>('spectrum'),
@@ -85,6 +87,7 @@ function choose(next: AudioBuffer, name: string, synthetic: boolean): void {
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-signal]'))
   button.addEventListener('click', () => {
     try {
+      loadGeneration++;
       const name = button.dataset.signal as SignalName;
       choose(createSignal(name), SIGNAL_LABELS[name], true);
       for (const peer of document.querySelectorAll<HTMLButtonElement>('[data-signal]')) {
@@ -158,3 +161,25 @@ new ResizeObserver(() => {
   cancelAnimationFrame(resizeFrame);
   resizeFrame = requestAnimationFrame(draw);
 }).observe(element('waveform').parentElement!);
+
+element<HTMLInputElement>('audio-file').addEventListener('change', async (event) => {
+  const input = event.target as HTMLInputElement,
+    file = input.files?.[0];
+  if (!file) return;
+  const generation = ++loadGeneration;
+  status('Decoding audio locally…');
+  try {
+    const next = await loadAudioFile(file);
+    if (generation !== loadGeneration) return;
+    choose(next, file.name, false);
+    for (const button of document.querySelectorAll<HTMLButtonElement>('[data-signal]')) {
+      button.classList.remove('active');
+      button.setAttribute('aria-pressed', 'false');
+    }
+  } catch (error) {
+    if (generation === loadGeneration)
+      status(error instanceof Error ? error.message : 'Could not decode audio', true);
+  } finally {
+    input.value = '';
+  }
+});
