@@ -110,3 +110,51 @@ for (const id of ['db-floor', 'palette'])
     draw();
   });
 choose(audio, sourceName, true);
+
+for (const [id, action] of [
+  ['zoom-in', () => viewport.zoom(2)],
+  ['zoom-out', () => viewport.zoom(0.5)],
+  ['pan-left', () => viewport.pan(-(viewport.range.end - viewport.range.start) / 4)],
+  ['pan-right', () => viewport.pan((viewport.range.end - viewport.range.start) / 4)],
+  ['reset-view', () => viewport.reset()],
+] as const)
+  element(id).addEventListener('click', () => {
+    action();
+    draw();
+  });
+wave.addEventListener(
+  'wheel',
+  (event) => {
+    event.preventDefault();
+    const rect = wave.getBoundingClientRect();
+    viewport.zoom(
+      Math.exp(-Math.max(-100, Math.min(100, event.deltaY)) / 200),
+      Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+    );
+    draw();
+  },
+  { passive: false },
+);
+let dragX: number | undefined;
+wave.addEventListener('pointerdown', (event) => {
+  dragX = event.clientX;
+  wave.setPointerCapture(event.pointerId);
+});
+wave.addEventListener('pointermove', (event) => {
+  if (dragX === undefined) return;
+  viewport.pan(
+    ((dragX - event.clientX) / wave.getBoundingClientRect().width) *
+      (viewport.range.end - viewport.range.start),
+  );
+  dragX = event.clientX;
+  draw();
+});
+for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
+  wave.addEventListener(event, () => {
+    dragX = undefined;
+  });
+let resizeFrame = 0;
+new ResizeObserver(() => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(draw);
+}).observe(element('waveform').parentElement!);
