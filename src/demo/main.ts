@@ -74,6 +74,7 @@ function analyze(): void {
 }
 function choose(next: AudioBuffer, name: string, synthetic: boolean): void {
   session.stop();
+  element('microphone').classList.remove('active');
   audio = next;
   sourceName = name;
   samples = downmixToMono(audio).getChannel(0);
@@ -208,8 +209,10 @@ element('play').addEventListener('click', async () => {
 });
 element('stop').addEventListener('click', () => {
   session.stop();
+  element('microphone').classList.remove('active');
+  setText('source-title', sourceName);
   updateTransport();
-  draw();
+  analyze();
   status('Stopped.');
 });
 element<HTMLInputElement>('volume').addEventListener('input', (event) =>
@@ -217,4 +220,63 @@ element<HTMLInputElement>('volume').addEventListener('input', (event) =>
 );
 window.addEventListener('pagehide', () => {
   void session.close();
+});
+
+let liveFrames: Float32Array[] = [];
+let lastPaint = 0;
+function paintLive(time: number): void {
+  if (session.state === 'closed') return;
+  if (time - lastPaint >= 100) {
+    lastPaint = time;
+    updateTransport();
+    if (session.state === 'playing' || session.state === 'microphone') {
+      const bins = session.readSpectrum();
+      drawSpectrum(spectrum, bins, {
+        ...canvasSize(spectrum),
+        floor: Number(select('db-floor')),
+        color: '#a89bff',
+      });
+      setText('spectrum-mode', 'LIVE · WEB AUDIO');
+      if (session.state === 'microphone') {
+        const input = session.readTimeDomain();
+        drawWaveform(wave, input, canvasSize(wave));
+        liveFrames.push(bins);
+        if (liveFrames.length > 128) liveFrames.shift();
+        drawSpectrogram(spectrogram, liveFrames, {
+          ...canvasSize(spectrogram),
+          floor: Number(select('db-floor')),
+          palette: select('palette') as PaletteName,
+        });
+        setText('rms', `${linToDb(rms(input)).toFixed(1)} dB`);
+        setText('frame-count', `${liveFrames.length} live frames`);
+      }
+    } else {
+      setText('spectrum-mode', 'FIRST FRAME');
+    }
+  }
+  requestAnimationFrame(paintLive);
+}
+requestAnimationFrame(paintLive);
+element('microphone').addEventListener('click', async () => {
+  if (session.state === 'microphone') {
+    session.stop();
+    analyze();
+    status('Microphone stopped. Selected recording restored.');
+    setText('source-title', sourceName);
+    element('microphone').classList.remove('active');
+    return;
+  }
+  try {
+    loadGeneration++;
+    status('Waiting for microphone permission…');
+    await session.microphone();
+    if (!['microphone'].includes(session.state)) return;
+    liveFrames = [];
+    setText('source-title', 'Live microphone');
+    setText('source-detail', `${(session.sampleRate ?? 0) / 1000} kHz · monitoring muted`);
+    element('microphone').classList.add('active');
+    status('Microphone active. Use Stop to release the device.');
+  } catch (error) {
+    status(error instanceof Error ? error.message : 'Microphone could not start', true);
+  }
 });
