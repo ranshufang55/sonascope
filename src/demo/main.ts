@@ -11,11 +11,13 @@ import {
   drawSpectrum,
   drawSpectrogram,
   Viewport,
+  AudioSession,
   type PaletteName,
 } from '../browser/index.js';
 import { createSignal, SIGNAL_LABELS, type SignalName } from './signals.js';
 import { element, setText, canvasSize } from './dom.js';
 
+const session = new AudioSession();
 let audio: AudioBuffer = createSignal('harmonics');
 let samples = downmixToMono(audio).getChannel(0);
 let pyramid: Pyramid = buildPyramid(samples);
@@ -71,6 +73,7 @@ function analyze(): void {
   draw();
 }
 function choose(next: AudioBuffer, name: string, synthetic: boolean): void {
+  session.stop();
   audio = next;
   sourceName = name;
   samples = downmixToMono(audio).getChannel(0);
@@ -182,4 +185,36 @@ element<HTMLInputElement>('audio-file').addEventListener('change', async (event)
   } finally {
     input.value = '';
   }
+});
+
+function updateTransport(): void {
+  element<HTMLButtonElement>('play').innerHTML =
+    session.state === 'playing' ? 'Ⅱ <span>Pause</span>' : '▶ <span>Play</span>';
+  element('play').setAttribute(
+    'aria-label',
+    session.state === 'playing' ? 'Pause audio' : 'Play audio',
+  );
+}
+element('play').addEventListener('click', async () => {
+  try {
+    if (session.state === 'playing') await session.pause();
+    else if (session.state === 'paused') await session.resume();
+    else await session.play(audio);
+    updateTransport();
+    status(session.state === 'playing' ? 'Playing selected recording.' : 'Playback paused.');
+  } catch (error) {
+    status(error instanceof Error ? error.message : 'Playback failed', true);
+  }
+});
+element('stop').addEventListener('click', () => {
+  session.stop();
+  updateTransport();
+  draw();
+  status('Stopped.');
+});
+element<HTMLInputElement>('volume').addEventListener('input', (event) =>
+  session.setVolume(Number((event.target as HTMLInputElement).value)),
+);
+window.addEventListener('pagehide', () => {
+  void session.close();
 });
