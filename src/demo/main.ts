@@ -1,3 +1,5 @@
+import { serializeAnalysis, analysisToCsv } from '../io/analysis-export.js';
+import { encodeWav } from '../io/wav.js';
 import { loadAudioFile } from './file-loader.js';
 import { analyzeAudio, type AudioAnalysis } from '../analysis.js';
 import type { AudioBuffer } from '../core/buffer.js';
@@ -15,7 +17,7 @@ import {
   type PaletteName,
 } from '../browser/index.js';
 import { createSignal, SIGNAL_LABELS, type SignalName } from './signals.js';
-import { element, setText, canvasSize } from './dom.js';
+import { element, setText, canvasSize, download } from './dom.js';
 
 const session = new AudioSession();
 let audio: AudioBuffer = createSignal('harmonics');
@@ -189,6 +191,20 @@ element<HTMLInputElement>('audio-file').addEventListener('change', async (event)
 });
 
 function updateTransport(): void {
+  for (const id of [
+    'export-json',
+    'export-csv',
+    'export-wav',
+    'fft-size',
+    'window',
+    'zoom-in',
+    'zoom-out',
+    'pan-left',
+    'pan-right',
+    'reset-view',
+  ])
+    (element(id) as HTMLButtonElement | HTMLSelectElement).disabled =
+      session.state === 'microphone';
   element<HTMLButtonElement>('play').innerHTML =
     session.state === 'playing' ? 'Ⅱ <span>Pause</span>' : '▶ <span>Play</span>';
   element('play').setAttribute(
@@ -280,3 +296,25 @@ element('microphone').addEventListener('click', async () => {
     status(error instanceof Error ? error.message : 'Microphone could not start', true);
   }
 });
+
+element('export-json').addEventListener('click', () =>
+  download(
+    new Blob([serializeAnalysis(analysis)], { type: 'application/json' }),
+    'sonascope-analysis.json',
+  ),
+);
+element('export-csv').addEventListener('click', () =>
+  download(
+    new Blob([analysisToCsv(analysis)], { type: 'text/csv;charset=utf-8' }),
+    'sonascope-features.csv',
+  ),
+);
+element('export-wav').addEventListener('click', () =>
+  download(new Blob([encodeWav(audio)], { type: 'audio/wav' }), 'sonascope-audio.wav'),
+);
+element('export-png').addEventListener('click', () =>
+  spectrogram.toBlob((blob) => {
+    if (blob) download(blob, 'sonascope-spectrogram.png');
+    else status('Image export failed', true);
+  }, 'image/png'),
+);
