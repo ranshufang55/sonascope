@@ -5,3 +5,5 @@ demo/dist
 public/build
 *.lock
 package-lock.json
+
+web-dist

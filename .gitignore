@@ -8,3 +8,5 @@ coverage/
 demo/dist/
 .tmp/
 .cache/
+
+web-dist/
