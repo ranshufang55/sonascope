@@ -42,7 +42,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "tsc -p tsconfig.build.json --noEmit",
-    "demo:build": "node scripts/build-demo.mjs"
+    "demo:build": "npm run build && node scripts/build-demo.mjs",
+    "demo:serve": "node scripts/serve-demo.mjs",
+    "demo": "npm run demo:build && npm run demo:serve"
   },
   "keywords": [
     "audio",
