@@ -64,7 +64,7 @@ export function generateLinearChirp(
   const amplitude = options ? requireFiniteOption(options.amplitude ?? 1, 'amplitude') : 1;
   const startPhase = options ? requireFiniteOption(options.startPhase ?? 0, 'startPhase') : 0;
   const data = buf.getChannel(0);
-  if (buf.numSamples === 0 || f0 === 0) {
+  if (buf.numSamples === 0) {
     for (let i = 0; i < buf.numSamples; i++) data[i] = 0;
     return buf;
   }

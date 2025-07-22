@@ -62,3 +62,9 @@ describe('extra generators', () => {
     expect(() => generateLogChirp(48000, 0.1, 100, 0)).toThrow();
   });
 });
+it('generates a rising sweep from DC and respects a constant phase at zero frequency', () => {
+  const sweep = generateLinearChirp(8000, 0.01, 0, 1000).getChannel(0);
+  expect(sweep.some((v) => Math.abs(v) > 0.5)).toBe(true);
+  const constant = generateLinearChirp(8000, 0.01, 0, 0, { startPhase: Math.PI / 2 }).getChannel(0);
+  expect(constant.every((v) => Math.abs(v - 1) < 1e-6)).toBe(true);
+});
