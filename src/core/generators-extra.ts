@@ -233,7 +233,7 @@ export function generateBrownNoise(
   for (let i = 0; i < buf.numSamples; i++) {
     const w = (rand() ?? 0) * 2 - 1;
     last = (last + 0.02 * w) * 0.995;
-    data[i] = amplitude * last;
+    data[i] = last;
   }
   // Normalise to roughly fit [-1, 1] over a finite window.
   let peak = 0;
@@ -242,7 +242,7 @@ export function generateBrownNoise(
     if (v > peak) peak = v;
   }
   if (peak > 0) {
-    const gain = 1 / peak;
+    const gain = amplitude / peak;
     for (let i = 0; i < buf.numSamples; i++) data[i] = (data[i] ?? 0) * gain;
   }
   return buf;

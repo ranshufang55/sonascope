@@ -75,3 +75,10 @@ it('reduces a constant log sweep to a sine without NaNs', () => {
     expect(log.every((v, i) => Math.abs(v - linear[i]!) < 1e-5)).toBe(true);
   }
 });
+it('scales seeded brown noise linearly through positive, negative and zero amplitudes', () => {
+  const base = generateBrownNoise(8000, 0.02, { amplitude: 1, seed: 9 }).getChannel(0);
+  for (const amplitude of [-0.5, 0, 0.25, 2]) {
+    const signal = generateBrownNoise(8000, 0.02, { amplitude, seed: 9 }).getChannel(0);
+    expect(signal.every((v, i) => Math.abs(v - amplitude * base[i]!) < 1e-6)).toBe(true);
+  }
+});
