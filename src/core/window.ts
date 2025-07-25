@@ -5,7 +5,7 @@
 // [1]. Hann, Hamming, Blackman, and Bartlett use a denominator of
 // (length - 1) which is zero at length 1; we special-case that path.
 // Triangular and Bartlett are kept distinct: triangular reaches
-// zero only at the endpoints and peaks at the centre, while
+// nonzero endpoints and peaks at the centre, while
 // bartlett is the symmetric ramp that touches zero at every endpoint.
 
 import { assertFiniteSamples, assertInteger, assertPositive } from './validation.js';
@@ -48,7 +48,7 @@ export function makeWindow(type: WindowType, length: number): Float32Array {
     case 'triangular':
       for (let i = 0; i < length; i++) {
         const center = denom / 2;
-        w[i] = 1 - Math.abs(i - center) / center;
+        w[i] = 1 - Math.abs(i - center) / (length % 2 === 0 ? length / 2 : (length + 1) / 2);
       }
       return w;
     case 'bartlett':

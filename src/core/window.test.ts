@@ -41,9 +41,9 @@ describe('windows', () => {
 
   it('triangular is symmetric and peaks at center', () => {
     const w = triangular(5);
-    expect(w[0]).toBeCloseTo(0, 4);
+    expect(w[0]).toBeCloseTo(1 / 3, 4);
     expect(w[2]).toBeCloseTo(1, 4);
-    expect(w[4]).toBeCloseTo(0, 4);
+    expect(w[4]).toBeCloseTo(1 / 3, 4);
   });
 
   it('bartlett endpoints are zero with linear ramp', () => {
@@ -95,12 +95,12 @@ describe('windows', () => {
     }
   });
 
-  it('triangular and bartlett are both symmetric and reach zero at the ends', () => {
+  it('triangular and bartlett are symmetric with distinct endpoints', () => {
     const t = triangular(7);
     const b = bartlett(7);
     for (const w of [t, b]) {
-      expect(w[0]).toBeCloseTo(0, 6);
-      expect(w[6]).toBeCloseTo(0, 6);
+      expect(w[0]).toBeCloseTo(w === t ? 0.25 : 0, 6);
+      expect(w[6]).toBeCloseTo(w === t ? 0.25 : 0, 6);
       expect(Math.abs(w[1] - w[5])).toBeLessThan(1e-6);
       expect(Math.abs(w[2] - w[4])).toBeLessThan(1e-6);
     }
@@ -112,4 +112,9 @@ describe('windows', () => {
     expect(() => colaNormalize(hann(8), 1.5)).toThrow();
     expect(() => colaNormalize(new Float32Array([1, NaN]), 2)).toThrow();
   });
+});
+it('pins odd and even triangular window coefficients independently of Bartlett', () => {
+  expect(Array.from(triangular(4))).toEqual([0.25, 0.75, 0.75, 0.25]);
+  expect(Array.from(triangular(3))).toEqual([0.5, 1, 0.5]);
+  expect(Array.from(bartlett(3))).toEqual([0, 1, 0]);
 });
