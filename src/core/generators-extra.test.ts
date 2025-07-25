@@ -68,3 +68,10 @@ it('generates a rising sweep from DC and respects a constant phase at zero frequ
   const constant = generateLinearChirp(8000, 0.01, 0, 0, { startPhase: Math.PI / 2 }).getChannel(0);
   expect(constant.every((v) => Math.abs(v - 1) < 1e-6)).toBe(true);
 });
+it('reduces a constant log sweep to a sine without NaNs', () => {
+  for (const end of [1000, 1000 + 1e-10]) {
+    const log = generateLogChirp(8000, 0.01, 1000, end).getChannel(0);
+    const linear = generateLinearChirp(8000, 0.01, 1000, end).getChannel(0);
+    expect(log.every((v, i) => Math.abs(v - linear[i]!) < 1e-5)).toBe(true);
+  }
+});

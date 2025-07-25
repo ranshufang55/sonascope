@@ -101,15 +101,14 @@ export function generateLogChirp(
     return buf;
   }
   const k = Math.log(f1 / f0);
+  if (Math.abs(k) < 1e-12) return generateLinearChirp(sampleRate, durationSeconds, f0, f1, options);
   for (let i = 0; i < buf.numSamples; i++) {
     const t = i / sampleRate;
-    const freq = f0 * Math.exp((k * t) / Math.max(1e-12, durationSeconds));
     const phase =
       startPhase +
-      (TWO_PI * (f0 * (Math.exp((k * t) / Math.max(1e-12, durationSeconds)) - 1))) /
+      (TWO_PI * (f0 * Math.expm1((k * t) / Math.max(1e-12, durationSeconds)))) /
         (k / Math.max(1e-12, durationSeconds));
     data[i] = amplitude * Math.sin(phase);
-    void freq;
   }
   return buf;
 }
