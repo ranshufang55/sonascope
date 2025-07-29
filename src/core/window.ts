@@ -23,6 +23,9 @@ export type WindowType =
 export function makeWindow(type: WindowType, length: number): Float32Array {
   assertInteger(length, 'length');
   assertPositive(length, 'length');
+  if (length > 2 ** 20) throw new RangeError('Window exceeds sample limit');
+  if (!['hann', 'hamming', 'blackman', 'rectangular', 'triangular', 'bartlett'].includes(type))
+    throw new RangeError('Unknown window');
   const w = new Float32Array(length);
   if (length === 1) {
     w[0] = 1;

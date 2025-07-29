@@ -118,3 +118,7 @@ it('pins odd and even triangular window coefficients independently of Bartlett',
   expect(Array.from(triangular(3))).toEqual([0.5, 1, 0.5]);
   expect(Array.from(bartlett(3))).toEqual([0, 1, 0]);
 });
+it('rejects invalid window names at singleton length and excessive allocations', () => {
+  for (const size of [1, 4]) expect(() => makeWindow('unknown' as never, size)).toThrow();
+  expect(() => hann(2 ** 20 + 1)).toThrow();
+});
