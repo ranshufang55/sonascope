@@ -88,6 +88,11 @@ export function applyWindow(samples: Float32Array, window: ArrayLike<number>): F
   if (samples.length !== window.length) {
     throw new RangeError(`applyWindow: length mismatch ${samples.length} vs ${window.length}`);
   }
+  assertFiniteSamples(samples);
+  assertFiniteSamples(window, 'window');
+  for (let i = 0; i < samples.length; i++)
+    if (!Number.isFinite(Math.fround(samples[i]! * window[i]!)))
+      throw new RangeError('Windowed sample exceeds Float32');
   for (let i = 0; i < samples.length; i++) samples[i] = (samples[i] ?? 0) * (window[i] ?? 0);
   return samples;
 }

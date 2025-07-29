@@ -122,3 +122,10 @@ it('rejects invalid window names at singleton length and excessive allocations',
   for (const size of [1, 4]) expect(() => makeWindow('unknown' as never, size)).toThrow();
   expect(() => hann(2 ** 20 + 1)).toThrow();
 });
+it('leaves input intact when a later window coefficient is invalid or overflows', () => {
+  for (const coefficient of [NaN, Infinity, 1e40]) {
+    const samples = new Float32Array([1, 2]);
+    expect(() => applyWindow(samples, [1, coefficient])).toThrow();
+    expect(Array.from(samples)).toEqual([1, 2]);
+  }
+});
