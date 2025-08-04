@@ -50,3 +50,15 @@ it('matches Slaney high-frequency landmarks and the complete inverse curve', () 
   for (const hz of [0, 60, 440, 999, 1000, 1001, 2000, 4000, 6400, 12000, 24000])
     expect(melToHz(hzToMel(hz))).toBeCloseTo(hz, 7);
 });
+it('rejects invalid band and mel inputs across forward and inverse helpers', () => {
+  for (const value of [-1, NaN, Infinity]) {
+    expect(() => hzToMel(value)).toThrow();
+    expect(() => melToHz(value)).toThrow();
+  }
+  for (const count of [0, 1.5, Infinity, 65537]) {
+    expect(() => linearBands(count, 0, 1000)).toThrow();
+    expect(() => logBands(count, 1, 1000)).toThrow();
+  }
+  expect(() => linearBands(2, 0, Infinity)).toThrow();
+  expect(() => logBands(2, NaN, 1000)).toThrow();
+});

@@ -1,6 +1,6 @@
 // Frequency band helpers: linear, log, and mel.
 
-import { assertPositive } from './validation.js';
+import { assertPositive, assertNonNegative, assertInteger, assertInRange } from './validation.js';
 
 const F_SP = 200 / 3;
 const MIN_LOG_HZ = 1000;
@@ -9,17 +9,22 @@ const MIN_LOG_MEL = 15;
 const LOG_STEP = Math.log(6.4) / 27;
 
 export function hzToMel(hz: number): number {
+  assertNonNegative(hz, 'hz');
   if (hz < MIN_LOG_HZ) return hz / F_SP;
   return MIN_LOG_MEL + Math.log(hz / MIN_LOG_HZ) / LOG_STEP;
 }
 
 export function melToHz(mel: number): number {
+  assertInRange(mel, 0, 10000, 'mel');
   if (mel < MIN_LOG_MEL) return F_SP * mel;
   return MIN_LOG_HZ * Math.exp((mel - MIN_LOG_MEL) * LOG_STEP);
 }
 
 export function linearBands(numBands: number, minHz: number, maxHz: number): Float32Array {
-  assertPositive(numBands, 'numBands');
+  assertInteger(numBands, 'numBands');
+  assertInRange(numBands, 1, 65536, 'numBands');
+  assertNonNegative(minHz, 'minHz');
+  assertInRange(maxHz, 0, 192000, 'maxHz');
   if (maxHz <= minHz) {
     throw new RangeError('linearBands: maxHz must be greater than minHz');
   }
@@ -30,7 +35,10 @@ export function linearBands(numBands: number, minHz: number, maxHz: number): Flo
 }
 
 export function logBands(numBands: number, minHz: number, maxHz: number): Float32Array {
-  assertPositive(numBands, 'numBands');
+  assertInteger(numBands, 'numBands');
+  assertInRange(numBands, 1, 65536, 'numBands');
+  assertNonNegative(minHz, 'minHz');
+  assertInRange(maxHz, 0, 192000, 'maxHz');
   if (maxHz <= minHz || minHz <= 0) {
     throw new RangeError('logBands: maxHz > minHz > 0 required');
   }
