@@ -63,7 +63,17 @@ export function melFilterbank(
   minHz: number = 0,
   maxHz?: number,
 ): MelFilterbank {
-  assertPositive(numFilters, 'numFilters');
+  assertInteger(numFilters, 'numFilters');
+  assertInRange(numFilters, 1, 512, 'numFilters');
+  assertInteger(fftSize, 'fftSize');
+  assertInRange(fftSize, 2, 65536, 'fftSize');
+  assertInRange(sampleRate, 1, 192000, 'sampleRate');
+  assertNonNegative(minHz, 'minHz');
+  if ((maxHz ?? sampleRate / 2) <= minHz || (maxHz ?? sampleRate / 2) > sampleRate / 2)
+    throw new RangeError('Mel frequencies must lie in the Nyquist interval');
+  assertPositive(maxHz ?? sampleRate / 2, 'maxHz');
+  if (numFilters * (Math.floor(fftSize / 2) + 1) > 2 ** 22)
+    throw new RangeError('Filterbank exceeds cell limit');
   assertPositive(fftSize, 'fftSize');
   assertPositive(sampleRate, 'sampleRate');
   const nyq = maxHz ?? sampleRate / 2;

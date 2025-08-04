@@ -62,3 +62,14 @@ it('rejects invalid band and mel inputs across forward and inverse helpers', () 
   expect(() => linearBands(2, 0, Infinity)).toThrow();
   expect(() => logBands(2, NaN, 1000)).toThrow();
 });
+it('rejects filterbanks outside the supported shape and Nyquist range', () => {
+  for (const args of [
+    [0, 64, 16000, 0, 8000],
+    [513, 64, 16000, 0, 8000],
+    [4, 1.5, 16000, 0, 8000],
+    [4, 64, 16000, 9000, 10000],
+    [4, 64, 16000, 0, 9000],
+    [4, 64, 16000, 0, NaN],
+  ])
+    expect(() => melFilterbank(...(args as [number, number, number, number, number]))).toThrow();
+});
