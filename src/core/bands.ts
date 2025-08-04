@@ -85,26 +85,18 @@ export function melFilterbank(
   }
   const hzPoints = new Float32Array(melPoints.length);
   for (let i = 0; i < hzPoints.length; i++) hzPoints[i] = melToHz(melPoints[i] ?? 0);
-  const binPoints = new Float32Array(hzPoints.length);
-  const factor = (fftSize + 1) / sampleRate;
-  for (let i = 0; i < binPoints.length; i++) {
-    binPoints[i] = Math.floor((hzPoints[i] ?? 0) * factor);
-  }
-  const filters: Float32Array[] = new Array(numFilters);
-  const centers = new Float32Array(numFilters);
+  const filters: Float32Array[] = [],
+    centers = new Float32Array(numFilters);
   for (let m = 0; m < numFilters; m++) {
-    const start = binPoints[m] ?? 0;
-    const peak = binPoints[m + 1] ?? 0;
-    const end = binPoints[m + 2] ?? 0;
-    centers[m] = hzPoints[m + 1] ?? 0;
-    const filter = new Float32Array(Math.floor(fftSize / 2) + 1);
-    for (let k = start; k <= peak && k < filter.length; k++) {
-      filter[k] = (k - start) / Math.max(1, peak - start);
-    }
-    for (let k = peak; k <= end && k < filter.length; k++) {
-      filter[k] = (end - k) / Math.max(1, end - peak);
-    }
-    filters[m] = filter;
+    const left = hzPoints[m]!,
+      center = hzPoints[m + 1]!,
+      right = hzPoints[m + 2]!;
+    centers[m] = center;
+    const filter = Float32Array.from({ length: Math.floor(fftSize / 2) + 1 }, (_, bin) => {
+      const hz = (bin * sampleRate) / fftSize;
+      return Math.max(0, Math.min((hz - left) / (center - left), (right - hz) / (right - center)));
+    });
+    filters.push(filter);
   }
   return { filters, centerFrequencies: centers, numFilters };
 }

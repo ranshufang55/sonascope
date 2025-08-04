@@ -73,3 +73,9 @@ it('rejects filterbanks outside the supported shape and Nyquist range', () => {
   ])
     expect(() => melFilterbank(...(args as [number, number, number, number, number]))).toThrow();
 });
+it('matches continuous triangular weights at low-frequency linear mel points', () => {
+  const bank = melFilterbank(1, 8, 800, 0, 400);
+  expect(Array.from(bank.centerFrequencies)).toEqual([200]);
+  expect(Array.from(bank.filters[0]!)).toEqual([0, 0.5, 1, 0.5, 0]);
+  expect(Array.from(applyMelFilterbank([0, 1, 2, 1, 0], bank))).toEqual([3]);
+});
