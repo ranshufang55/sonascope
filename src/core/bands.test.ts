@@ -44,3 +44,9 @@ describe('bands', () => {
     expect(out.length).toBe(8);
   });
 });
+it('matches Slaney high-frequency landmarks and the complete inverse curve', () => {
+  expect(hzToMel(6400)).toBeCloseTo(42, 10);
+  expect(melToHz(42)).toBeCloseTo(6400, 8);
+  for (const hz of [0, 60, 440, 999, 1000, 1001, 2000, 4000, 6400, 12000, 24000])
+    expect(melToHz(hzToMel(hz))).toBeCloseTo(hz, 7);
+});

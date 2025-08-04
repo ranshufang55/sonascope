@@ -5,17 +5,17 @@ import { assertPositive } from './validation.js';
 const F_SP = 200 / 3;
 const MIN_LOG_HZ = 1000;
 const MIN_LOG_MEL = 15;
-const LOG_STEP = 27;
-const LOG_STEP_DEN = 23;
+// Slaney scale: https://librosa.org/doc/0.11.0/_modules/librosa/core/convert.html#hz_to_mel
+const LOG_STEP = Math.log(6.4) / 27;
 
 export function hzToMel(hz: number): number {
   if (hz < MIN_LOG_HZ) return hz / F_SP;
-  return MIN_LOG_MEL + (Math.log(hz / MIN_LOG_HZ) * LOG_STEP) / LOG_STEP_DEN;
+  return MIN_LOG_MEL + Math.log(hz / MIN_LOG_HZ) / LOG_STEP;
 }
 
 export function melToHz(mel: number): number {
   if (mel < MIN_LOG_MEL) return F_SP * mel;
-  return MIN_LOG_HZ * Math.exp(((mel - MIN_LOG_MEL) * LOG_STEP_DEN) / LOG_STEP);
+  return MIN_LOG_HZ * Math.exp((mel - MIN_LOG_MEL) * LOG_STEP);
 }
 
 export function linearBands(numBands: number, minHz: number, maxHz: number): Float32Array {
