@@ -24,3 +24,13 @@ describe('axis', () => {
     expect(nyquistFrequency(48000)).toBe(24000);
   });
 });
+it('round-trips fractional bins and rejects invalid axis geometry', () => {
+  for (const bin of [0, 0.25, 1, 32, 64])
+    expect(freqToBin(binToFreq(bin, 64, 8000), 64, 8000)).toBeCloseTo(bin, 8);
+  for (const rate of [0, NaN, Infinity]) {
+    expect(() => freqAxis(64, rate)).toThrow();
+    expect(() => nyquistFrequency(rate)).toThrow();
+    expect(() => binToFreq(1, 64, rate)).toThrow();
+    expect(() => freqToBin(1, 64, rate)).toThrow();
+  }
+});
