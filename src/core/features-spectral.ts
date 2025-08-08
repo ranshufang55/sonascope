@@ -60,17 +60,17 @@ export function spectralRolloff(
 
 export function spectralFlatness(magnitudes: ArrayLike<number>): number {
   if (magnitudes.length === 0) return 0;
-  const EPS = 1e-12;
   let logSum = 0;
   let arith = 0;
   for (let i = 0; i < magnitudes.length; i++) {
     const v = magnitudes[i] ?? 0;
-    logSum += Math.log(Math.max(EPS, v));
+    if (v === 0) return 0;
+    logSum += Math.log(v);
     arith += v;
   }
   if (arith === 0) return 0;
   const geo = Math.exp(logSum / magnitudes.length);
-  return geo / (arith / magnitudes.length);
+  return Math.min(1, geo / (arith / magnitudes.length));
 }
 
 export function spectralFlux(current: ArrayLike<number>, previous: ArrayLike<number>): number {

@@ -53,3 +53,9 @@ describe('spectral features', () => {
     expect(spectralSpread(m, 16, 16000)).toBeGreaterThanOrEqual(0);
   });
 });
+it('keeps flatness bounded and invariant for extremely quiet spectra', () => {
+  for (const amplitude of [1, 1e-10, 1e-30])
+    expect(spectralFlatness([amplitude, amplitude, amplitude])).toBeCloseTo(1, 6);
+  expect(spectralFlatness([0, 1, 1])).toBe(0);
+  expect(spectralFlatness([0, 0])).toBe(0);
+});
