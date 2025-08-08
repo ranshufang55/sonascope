@@ -1,6 +1,12 @@
 // Frequency band helpers: linear, log, and mel.
 
-import { assertPositive, assertNonNegative, assertInteger, assertInRange } from './validation.js';
+import {
+  assertPositive,
+  assertNonNegative,
+  assertInteger,
+  assertInRange,
+  assertFiniteSamples,
+} from './validation.js';
 
 const F_SP = 200 / 3;
 const MIN_LOG_HZ = 1000;
@@ -105,6 +111,20 @@ export function applyMelFilterbank(
   power: ArrayLike<number>,
   filterbank: MelFilterbank,
 ): Float32Array {
+  assertInteger(filterbank.numFilters, 'numFilters');
+  assertInRange(filterbank.numFilters, 1, 512, 'numFilters');
+  assertFiniteSamples(power);
+  for (let i = 0; i < power.length; i++) assertNonNegative(power[i]!, 'power');
+  if (
+    filterbank.filters.length !== filterbank.numFilters ||
+    filterbank.centerFrequencies.length !== filterbank.numFilters
+  )
+    throw new RangeError('Filterbank shape mismatch');
+  for (const filter of filterbank.filters) {
+    assertFiniteSamples(filter);
+    if (filter.length !== power.length) throw new RangeError('Power spectrum length mismatch');
+    for (const value of filter) assertInRange(value, 0, 1, 'weight');
+  }
   const out = new Float32Array(filterbank.numFilters);
   for (let m = 0; m < filterbank.numFilters; m++) {
     const f = filterbank.filters[m];
