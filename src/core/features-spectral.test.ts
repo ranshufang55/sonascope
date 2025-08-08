@@ -59,3 +59,19 @@ it('keeps flatness bounded and invariant for extremely quiet spectra', () => {
   expect(spectralFlatness([0, 1, 1])).toBe(0);
   expect(spectralFlatness([0, 0])).toBe(0);
 });
+it('enforces every spectral feature input contract including empty branches', () => {
+  for (const value of [-1, NaN, Infinity])
+    for (const fn of [
+      spectralFlatness,
+      spectralEntropy,
+      (m: ArrayLike<number>) => spectralCentroid(m, 8, 8000),
+      (m: ArrayLike<number>) => spectralSpread(m, 8, 8000),
+      (m: ArrayLike<number>) => spectralRolloff(m, 8, 8000),
+      (m: ArrayLike<number>) => spectralFlux(m, [0]),
+    ])
+      expect(() => fn([value])).toThrow();
+  expect(() => spectralFlux([1], [1, 2])).toThrow();
+  for (const threshold of [-1, NaN, 2])
+    expect(() => spectralRolloff([], 8, 8000, threshold)).toThrow();
+  expect(() => spectralCentroid([], 0, 8000)).toThrow();
+});

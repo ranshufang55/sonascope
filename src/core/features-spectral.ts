@@ -1,3 +1,18 @@
+import {
+  assertFiniteSamples,
+  assertNonNegative,
+  assertInteger,
+  assertInRange,
+} from './validation.js';
+function assertSpectrum(values: ArrayLike<number>): void {
+  assertFiniteSamples(values);
+  for (let i = 0; i < values.length; i++) assertNonNegative(values[i]!, 'magnitude');
+}
+function assertAxis(fftSize: number, sampleRate: number): void {
+  assertInteger(fftSize, 'fftSize');
+  assertInRange(fftSize, 1, 2 ** 20, 'fftSize');
+  assertInRange(sampleRate, 1, 192000, 'sampleRate');
+}
 // Spectral features. All routines take a magnitude/power spectrum
 // and (where useful) the sample rate and FFT size.
 
@@ -6,6 +21,8 @@ export function spectralCentroid(
   fftSize: number,
   sampleRate: number,
 ): number {
+  assertAxis(fftSize, sampleRate);
+  assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
   let weighted = 0;
   let total = 0;
@@ -23,6 +40,8 @@ export function spectralSpread(
   fftSize: number,
   sampleRate: number,
 ): number {
+  assertAxis(fftSize, sampleRate);
+  assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
   const c = spectralCentroid(magnitudes, fftSize, sampleRate);
   let weighted = 0;
@@ -44,6 +63,9 @@ export function spectralRolloff(
   sampleRate: number,
   threshold: number = 0.85,
 ): number {
+  assertInRange(threshold, 0, 1, 'threshold');
+  assertAxis(fftSize, sampleRate);
+  assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
   let total = 0;
   for (let i = 0; i < magnitudes.length; i++) total += magnitudes[i] ?? 0;
@@ -59,6 +81,7 @@ export function spectralRolloff(
 }
 
 export function spectralFlatness(magnitudes: ArrayLike<number>): number {
+  assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
   let logSum = 0;
   let arith = 0;
@@ -74,7 +97,10 @@ export function spectralFlatness(magnitudes: ArrayLike<number>): number {
 }
 
 export function spectralFlux(current: ArrayLike<number>, previous: ArrayLike<number>): number {
-  const n = Math.max(current.length, previous.length);
+  assertSpectrum(current);
+  assertSpectrum(previous);
+  if (current.length !== previous.length) throw new RangeError('Spectral flux shape mismatch');
+  const n = current.length;
   let sum = 0;
   for (let i = 0; i < n; i++) {
     const cur = current[i] ?? 0;
@@ -86,6 +112,7 @@ export function spectralFlux(current: ArrayLike<number>, previous: ArrayLike<num
 }
 
 export function spectralEntropy(magnitudes: ArrayLike<number>): number {
+  assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
   let total = 0;
   for (let i = 0; i < magnitudes.length; i++) total += magnitudes[i] ?? 0;
