@@ -44,3 +44,8 @@ it('rejects fractional frame counts and retains frame-center timing', () => {
   expect(Array.from(timeAxis(3, 8, 4, 8))).toEqual([0.5, 1, 1.5]);
   expect(timeAxis(0, 8, 4, 8000)).toHaveLength(0);
 });
+it('exposes axes that align with one-sided spectra and high-level frame starts', async () => {
+  const { realFreqAxis, frameStartAxis } = await import('./axis.js');
+  expect(Array.from(realFreqAxis(8, 8000))).toEqual([0, 1000, 2000, 3000, 4000]);
+  expect(Array.from(frameStartAxis(3, 4, 8))).toEqual([0, 0.5, 1]);
+});

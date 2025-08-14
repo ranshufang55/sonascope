@@ -51,3 +51,18 @@ export function nyquistFrequency(sampleRate: number): number {
   assertInRange(sampleRate, 1, 192000, 'sampleRate');
   return sampleRate / 2;
 }
+
+/** Frequencies for the real-signal spectrum, including DC and Nyquist. */
+export function realFreqAxis(fftSize: number, sampleRate: number): Float32Array {
+  const full = freqAxis(fftSize, sampleRate);
+  return full.slice(0, Math.floor(fftSize / 2) + 1);
+}
+export function frameStartAxis(
+  numFrames: number,
+  hopSize: number,
+  sampleRate: number,
+): Float32Array {
+  const center = timeAxis(numFrames, 1, hopSize, sampleRate);
+  for (let i = 0; i < center.length; i++) center[i] = (i * hopSize) / sampleRate;
+  return center;
+}
