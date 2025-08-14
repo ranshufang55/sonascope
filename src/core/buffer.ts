@@ -8,6 +8,9 @@
 // The internal channel data itself is mutable (sample views) so callers
 // can transform samples in place without rebuilding the buffer.
 
+import { assertSampleRate, MAX_SAMPLES_PER_BUFFER } from './sample-rate.js';
+import { assertFiniteSamples } from './validation.js';
+
 export type ChannelData = Float32Array;
 export type SampleRate = number;
 export type NumChannels = number;
@@ -45,6 +48,9 @@ export class AudioBuffer implements AudioBufferShape {
         `AudioBuffer: numSamples must be a non-negative integer, got ${numSamples}`,
       );
     }
+    assertSampleRate(sampleRate);
+    if (numChannels > 32 || numSamples * numChannels > MAX_SAMPLES_PER_BUFFER)
+      throw new RangeError('AudioBuffer exceeds channel or aggregate sample limit');
     this.sampleRate = sampleRate;
     this.numChannels = numChannels;
     this.numSamples = numSamples;
@@ -66,6 +72,7 @@ export class AudioBuffer implements AudioBufferShape {
             `AudioBuffer: channel ${c} length ${channel.length} does not match numSamples ${numSamples}`,
           );
         }
+        assertFiniteSamples(channel, 'channel');
         const copy = new Float32Array(numSamples);
         copy.set(channel);
         channels[c] = copy;

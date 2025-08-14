@@ -84,3 +84,9 @@ describe('AudioBuffer', () => {
     expect(Object.isFrozen(buf.data)).toBe(true);
   });
 });
+it('rejects excessive aggregate allocations and nonfinite supplied channels', () => {
+  expect(() => new AudioBuffer(8000, 33, 0)).toThrow();
+  expect(() => new AudioBuffer(8000, 2, 2 ** 24)).toThrow();
+  expect(() => new AudioBuffer(8000, 1, 2, [new Float32Array([0, NaN])])).toThrow();
+  expect(() => new AudioBuffer(192001, 1, 0)).toThrow();
+});
