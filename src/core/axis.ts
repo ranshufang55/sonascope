@@ -1,6 +1,6 @@
 // Frequency and time axes.
 
-import { assertNonNegative, assertPositive, assertInteger, assertInRange } from './validation.js';
+import { assertPositive, assertInteger, assertInRange } from './validation.js';
 
 export function freqAxis(fftSize: number, sampleRate: number): Float32Array {
   assertInteger(fftSize, 'fftSize');
@@ -33,7 +33,10 @@ export function timeAxis(
   hopSize: number,
   sampleRate: number,
 ): Float32Array {
-  assertNonNegative(numFrames, 'numFrames');
+  assertInteger(numFrames, 'numFrames');
+  assertInRange(numFrames, 0, 2 ** 20, 'numFrames');
+  assertInteger(frameSize, 'frameSize');
+  assertInteger(hopSize, 'hopSize');
   assertPositive(frameSize, 'frameSize');
   assertPositive(hopSize, 'hopSize');
   assertInRange(sampleRate, 1, 192000, 'sampleRate');

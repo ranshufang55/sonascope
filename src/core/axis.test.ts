@@ -34,3 +34,13 @@ it('round-trips fractional bins and rejects invalid axis geometry', () => {
     expect(() => freqToBin(1, 64, rate)).toThrow();
   }
 });
+it('rejects fractional frame counts and retains frame-center timing', () => {
+  for (const args of [
+    [1.5, 8, 4, 8000],
+    [2, 1.5, 4, 8000],
+    [2, 8, 1.5, 8000],
+  ])
+    expect(() => timeAxis(...(args as [number, number, number, number]))).toThrow();
+  expect(Array.from(timeAxis(3, 8, 4, 8))).toEqual([0.5, 1, 1.5]);
+  expect(timeAxis(0, 8, 4, 8000)).toHaveLength(0);
+});
