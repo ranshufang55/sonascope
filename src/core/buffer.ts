@@ -88,6 +88,8 @@ export class AudioBuffer implements AudioBufferShape {
   }
 
   getChannel(channel: number): ChannelData {
+    if (!Number.isInteger(channel) || channel < 0 || channel >= this.numChannels)
+      throw new RangeError('Channel index out of range');
     const ch = this.data[channel];
     if (!ch) {
       throw new RangeError(

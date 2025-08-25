@@ -90,3 +90,9 @@ it('rejects excessive aggregate allocations and nonfinite supplied channels', ()
   expect(() => new AudioBuffer(8000, 1, 2, [new Float32Array([0, NaN])])).toThrow();
   expect(() => new AudioBuffer(192001, 1, 0)).toThrow();
 });
+it('treats channel selectors as integer indices across the whole access surface', () => {
+  const buffer = new AudioBuffer(8000, 1, 2);
+  for (const index of [0.5, NaN, Infinity, 'map', 'length', '0'] as unknown as number[])
+    expect(() => buffer.getChannel(index)).toThrow();
+  expect(buffer.getChannel(0)).toHaveLength(2);
+});
