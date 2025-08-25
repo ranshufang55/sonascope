@@ -31,7 +31,7 @@ function normalizeRmsUnchecked(samples: Float32Array, target: number = 0.1): Flo
   return samples;
 }
 
-export function dcRemoveMean(samples: Float32Array): Float32Array {
+function dcRemoveMeanUnchecked(samples: Float32Array): Float32Array {
   if (samples.length === 0) return samples;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) sum += samples[i] ?? 0;
@@ -123,4 +123,8 @@ export function normalizePeak(samples: Float32Array, target: number = 1): Float3
 
 export function normalizeRms(samples: Float32Array, target: number = 0.1): Float32Array {
   return processSafely(samples, (copy) => normalizeRmsUnchecked(copy, target));
+}
+
+export function dcRemoveMean(samples: Float32Array): Float32Array {
+  return processSafely(samples, (copy) => dcRemoveMeanUnchecked(copy));
 }

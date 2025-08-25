@@ -99,3 +99,10 @@ it('preserves input when RMS normalization encounters invalid samples', () => {
   expect(Number.isNaN(samples[1])).toBe(true);
   expect(Array.from(normalizeRms(new Float32Array([1, -1]), 0.5))).toEqual([0.5, -0.5]);
 });
+it('preserves input when mean removal encounters invalid samples', () => {
+  const samples = new Float32Array([1, NaN]);
+  expect(() => dcRemoveMean(samples)).toThrow();
+  expect(samples[0]).toBe(1);
+  expect(Number.isNaN(samples[1])).toBe(true);
+  expect(Array.from(dcRemoveMean(new Float32Array([1, 2, 3])))).toEqual([-1, 0, 1]);
+});
