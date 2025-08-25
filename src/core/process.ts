@@ -1,10 +1,11 @@
+import { assertFiniteSamples } from './validation.js';
 // Signal-processing primitives: normalization, DC removal, clipping,
 // and pre-emphasis. Each routine is in-place, returns the same array
 // for fluent composition, and is safe on empty input.
 
 import { rms as computeRms } from './features-time.js';
 
-export function normalizePeak(samples: Float32Array, target: number = 1): Float32Array {
+function normalizePeakUnchecked(samples: Float32Array, target: number = 1): Float32Array {
   if (!Number.isFinite(target) || target <= 0) {
     throw new RangeError(`normalizePeak: target must be > 0, got ${target}`);
   }
@@ -102,4 +103,20 @@ export function deEmphasis(samples: Float32Array, coefficient: number = 0.97): F
     prev = samples[i] ?? 0;
   }
   return samples;
+}
+
+/** Stage edits so any numeric failure leaves the caller's samples intact. */
+function processSafely(
+  samples: Float32Array,
+  transform: (copy: Float32Array) => Float32Array,
+): Float32Array {
+  assertFiniteSamples(samples);
+  const copy = transform(new Float32Array(samples));
+  assertFiniteSamples(copy);
+  samples.set(copy);
+  return samples;
+}
+
+export function normalizePeak(samples: Float32Array, target: number = 1): Float32Array {
+  return processSafely(samples, (copy) => normalizePeakUnchecked(copy, target));
 }

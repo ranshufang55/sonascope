@@ -85,3 +85,10 @@ describe('signal processing primitives', () => {
     expect(() => preEmphasis(new Float32Array(4), 1)).toThrow();
   });
 });
+it('preserves input when peak normalization encounters invalid samples', () => {
+  const samples = new Float32Array([1, NaN]);
+  expect(() => normalizePeak(samples)).toThrow();
+  expect(samples[0]).toBe(1);
+  expect(Number.isNaN(samples[1])).toBe(true);
+  expect(Array.from(normalizePeak(new Float32Array([-2, 1]), 0.5))).toEqual([-0.5, 0.25]);
+});
