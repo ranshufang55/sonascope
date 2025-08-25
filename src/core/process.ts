@@ -20,7 +20,7 @@ function normalizePeakUnchecked(samples: Float32Array, target: number = 1): Floa
   return samples;
 }
 
-export function normalizeRms(samples: Float32Array, target: number = 0.1): Float32Array {
+function normalizeRmsUnchecked(samples: Float32Array, target: number = 0.1): Float32Array {
   if (!Number.isFinite(target) || target <= 0) {
     throw new RangeError(`normalizeRms: target must be > 0, got ${target}`);
   }
@@ -119,4 +119,8 @@ function processSafely(
 
 export function normalizePeak(samples: Float32Array, target: number = 1): Float32Array {
   return processSafely(samples, (copy) => normalizePeakUnchecked(copy, target));
+}
+
+export function normalizeRms(samples: Float32Array, target: number = 0.1): Float32Array {
+  return processSafely(samples, (copy) => normalizeRmsUnchecked(copy, target));
 }
