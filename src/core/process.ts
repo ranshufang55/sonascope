@@ -40,7 +40,7 @@ function dcRemoveMeanUnchecked(samples: Float32Array): Float32Array {
   return samples;
 }
 
-export function dcRemoveHpf(samples: Float32Array, coefficient: number = 0.995): Float32Array {
+function dcRemoveHpfUnchecked(samples: Float32Array, coefficient: number = 0.995): Float32Array {
   if (!(coefficient > 0 && coefficient < 1)) {
     throw new RangeError(`dcRemoveHpf: coefficient must be in (0, 1), got ${coefficient}`);
   }
@@ -127,4 +127,8 @@ export function normalizeRms(samples: Float32Array, target: number = 0.1): Float
 
 export function dcRemoveMean(samples: Float32Array): Float32Array {
   return processSafely(samples, (copy) => dcRemoveMeanUnchecked(copy));
+}
+
+export function dcRemoveHpf(samples: Float32Array, coefficient: number = 0.995): Float32Array {
+  return processSafely(samples, (copy) => dcRemoveHpfUnchecked(copy, coefficient));
 }
