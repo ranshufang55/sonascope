@@ -54,3 +54,11 @@ describe('resample', () => {
     expect(down.length).toBe(8);
   });
 });
+it('enforces mode and kernel contracts even on empty and same-rate inputs', () => {
+  for (const length of [0, 8]) {
+    const audio = new AudioBuffer(8000, 1, length);
+    expect(() => resample(audio, 8000, 'unknown' as never)).toThrow();
+    expect(() => resample(audio, 16000, 'sinc', { sincHalfWidth: 0 })).toThrow();
+    expect(() => resampleMono(audio.getChannel(0), 8000, 8000, 'unknown' as never)).toThrow();
+  }
+});

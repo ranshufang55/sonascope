@@ -4,7 +4,8 @@
 // - sinc: windowed-sinc for high-quality resampling
 
 import { AudioBuffer } from './buffer.js';
-import { assertPositive } from './validation.js';
+import { assertFiniteSamples, assertInteger, assertInRange } from './validation.js';
+import { assertSampleRate } from './sample-rate.js';
 
 const TWO_PI = Math.PI * 2;
 
@@ -26,7 +27,14 @@ export function resample(
   mode: ResampleMode = 'linear',
   options?: { sincHalfWidth?: number },
 ): AudioBuffer {
-  assertPositive(targetSampleRate, 'targetSampleRate');
+  assertSampleRate(targetSampleRate);
+  assertSampleRate(buffer.sampleRate);
+  if (!['nearest', 'linear', 'sinc'].includes(mode))
+    throw new RangeError('Unknown resampling mode');
+  const halfWidth = options?.sincHalfWidth ?? 8;
+  assertInteger(halfWidth, 'sincHalfWidth');
+  assertInRange(halfWidth, 2, 64, 'sincHalfWidth');
+  for (const channel of buffer.data) assertFiniteSamples(channel);
   if (targetSampleRate === buffer.sampleRate) return buffer;
   if (buffer.numSamples === 0) {
     return new AudioBuffer(targetSampleRate, buffer.numChannels, 0);
@@ -34,7 +42,6 @@ export function resample(
   const ratio = targetSampleRate / buffer.sampleRate;
   const outSamples = Math.max(1, Math.round(buffer.numSamples * ratio));
   const out = new AudioBuffer(targetSampleRate, buffer.numChannels, outSamples);
-  const halfWidth = options?.sincHalfWidth ?? 8;
   for (let c = 0; c < buffer.numChannels; c++) {
     const src = buffer.getChannel(c);
     const dst = out.getChannel(c);
@@ -76,44 +83,9 @@ export function resampleMono(
   targetRate: number,
   mode: ResampleMode = 'linear',
 ): Float32Array {
-  assertPositive(sourceRate, 'sourceRate');
-  assertPositive(targetRate, 'targetRate');
-  if (samples.length === 0) return new Float32Array(0);
-  if (sourceRate === targetRate) {
-    const out = new Float32Array(samples.length);
-    for (let i = 0; i < samples.length; i++) out[i] = samples[i] ?? 0;
-    return out;
-  }
-  const ratio = targetRate / sourceRate;
-  const outSamples = Math.max(1, Math.round(samples.length * ratio));
-  const out = new Float32Array(outSamples);
-  for (let i = 0; i < outSamples; i++) {
-    const t = (i * sourceRate) / targetRate;
-    if (mode === 'nearest') {
-      const idx = Math.min(samples.length - 1, Math.max(0, Math.round(t)));
-      out[i] = samples[idx] ?? 0;
-    } else if (mode === 'linear') {
-      const lo = Math.floor(t);
-      const frac = t - lo;
-      const a = samples[Math.min(samples.length - 1, Math.max(0, lo))] ?? 0;
-      const b = samples[Math.min(samples.length - 1, Math.max(0, lo + 1))] ?? 0;
-      out[i] = a + (b - a) * frac;
-    } else {
-      const center = Math.floor(t);
-      const frac = t - center;
-      let acc = 0;
-      let wsum = 0;
-      for (let k = -8; k <= 8; k++) {
-        const idx = center + k;
-        if (idx < 0 || idx >= samples.length) continue;
-        const x = k - frac;
-        const w = hannWindow(k + 8, 17);
-        const h = sinc(x) * w;
-        acc += (samples[idx] ?? 0) * h;
-        wsum += h;
-      }
-      out[i] = wsum === 0 ? 0 : acc / wsum;
-    }
-  }
-  return out;
+  assertSampleRate(sourceRate);
+  assertSampleRate(targetRate);
+  assertFiniteSamples(samples);
+  const input = new AudioBuffer(sourceRate, 1, samples.length, [Float32Array.from(samples)]);
+  return new Float32Array(resample(input, targetRate, mode).getChannel(0));
 }
