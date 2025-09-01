@@ -79,7 +79,7 @@ function clipSoftUnchecked(samples: Float32Array, limit: number = 1): Float32Arr
   return samples;
 }
 
-export function preEmphasis(samples: Float32Array, coefficient: number = 0.97): Float32Array {
+function preEmphasisUnchecked(samples: Float32Array, coefficient: number = 0.97): Float32Array {
   if (!Number.isFinite(coefficient) || coefficient < 0 || coefficient >= 1) {
     throw new RangeError(`preEmphasis: coefficient must be in [0, 1), got ${coefficient}`);
   }
@@ -139,4 +139,8 @@ export function clipHard(samples: Float32Array, limit: number = 1): Float32Array
 
 export function clipSoft(samples: Float32Array, limit: number = 1): Float32Array {
   return processSafely(samples, (copy) => clipSoftUnchecked(copy, limit));
+}
+
+export function preEmphasis(samples: Float32Array, coefficient: number = 0.97): Float32Array {
+  return processSafely(samples, (copy) => preEmphasisUnchecked(copy, coefficient));
 }
