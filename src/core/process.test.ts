@@ -120,3 +120,11 @@ it('preserves input when hard clipping encounters invalid samples', () => {
   expect(Number.isNaN(samples[1])).toBe(true);
   expect(clipHard(new Float32Array([-2, 0, 2]), 0.5)).toEqual(new Float32Array([-0.5, 0, 0.5]));
 });
+it('preserves input when soft clipping encounters invalid samples', () => {
+  const samples = new Float32Array([1, NaN]);
+  expect(() => clipSoft(samples)).toThrow();
+  expect(samples[0]).toBe(1);
+  expect(Number.isNaN(samples[1])).toBe(true);
+  const soft = clipSoft(new Float32Array([-2, 0, 2]), 0.5);
+  expect(soft[0]).toBeCloseTo(-soft[2]!, 7);
+});

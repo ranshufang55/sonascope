@@ -67,7 +67,7 @@ function clipHardUnchecked(samples: Float32Array, limit: number = 1): Float32Arr
   return samples;
 }
 
-export function clipSoft(samples: Float32Array, limit: number = 1): Float32Array {
+function clipSoftUnchecked(samples: Float32Array, limit: number = 1): Float32Array {
   if (!Number.isFinite(limit) || !(limit > 0)) {
     throw new RangeError(`clipSoft: limit must be > 0, got ${limit}`);
   }
@@ -135,4 +135,8 @@ export function dcRemoveHpf(samples: Float32Array, coefficient: number = 0.995):
 
 export function clipHard(samples: Float32Array, limit: number = 1): Float32Array {
   return processSafely(samples, (copy) => clipHardUnchecked(copy, limit));
+}
+
+export function clipSoft(samples: Float32Array, limit: number = 1): Float32Array {
+  return processSafely(samples, (copy) => clipSoftUnchecked(copy, limit));
 }
