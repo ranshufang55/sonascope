@@ -135,3 +135,10 @@ it('preserves input when pre-emphasis encounters invalid samples', () => {
   expect(Number.isNaN(samples[1])).toBe(true);
   expect(preEmphasis(new Float32Array([1, 1, 1]), 0.5)).toEqual(new Float32Array([1, 0.5, 0.5]));
 });
+it('preserves input when de-emphasis encounters invalid samples', () => {
+  const samples = new Float32Array([1, NaN]);
+  expect(() => deEmphasis(samples)).toThrow();
+  expect(samples[0]).toBe(1);
+  expect(Number.isNaN(samples[1])).toBe(true);
+  expect(deEmphasis(new Float32Array([1, 0, 0]), 0.5)).toEqual(new Float32Array([1, 0.5, 0.25]));
+});
