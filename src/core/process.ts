@@ -55,8 +55,8 @@ function dcRemoveHpfUnchecked(samples: Float32Array, coefficient: number = 0.995
   return samples;
 }
 
-export function clipHard(samples: Float32Array, limit: number = 1): Float32Array {
-  if (!(limit > 0)) {
+function clipHardUnchecked(samples: Float32Array, limit: number = 1): Float32Array {
+  if (!Number.isFinite(limit) || !(limit > 0)) {
     throw new RangeError(`clipHard: limit must be > 0, got ${limit}`);
   }
   for (let i = 0; i < samples.length; i++) {
@@ -68,7 +68,7 @@ export function clipHard(samples: Float32Array, limit: number = 1): Float32Array
 }
 
 export function clipSoft(samples: Float32Array, limit: number = 1): Float32Array {
-  if (!(limit > 0)) {
+  if (!Number.isFinite(limit) || !(limit > 0)) {
     throw new RangeError(`clipSoft: limit must be > 0, got ${limit}`);
   }
   const k = 1 / limit;
@@ -131,4 +131,8 @@ export function dcRemoveMean(samples: Float32Array): Float32Array {
 
 export function dcRemoveHpf(samples: Float32Array, coefficient: number = 0.995): Float32Array {
   return processSafely(samples, (copy) => dcRemoveHpfUnchecked(copy, coefficient));
+}
+
+export function clipHard(samples: Float32Array, limit: number = 1): Float32Array {
+  return processSafely(samples, (copy) => clipHardUnchecked(copy, limit));
 }
