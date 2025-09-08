@@ -19,12 +19,12 @@ export function meanSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Arra
   if (!first) return new Float32Array(0);
   const bins = first.length;
   const out = new Float32Array(bins);
-  for (let i = 0; i < spectra.length; i++) {
-    const s = spectra[i];
-    if (!s) continue;
-    for (let k = 0; k < bins; k++) out[k] = (out[k] ?? 0) + (s[k] ?? 0);
+  for (let k = 0; k < bins; k++) {
+    let sum = 0;
+    for (let i = 0; i < spectra.length; i++) sum += spectra[i]![k]! / spectra.length;
+    if (!Number.isFinite(Math.fround(sum))) throw new RangeError('Mean exceeds Float32');
+    out[k] = sum;
   }
-  for (let k = 0; k < bins; k++) out[k] = (out[k] ?? 0) / spectra.length;
   return out;
 }
 

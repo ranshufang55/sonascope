@@ -53,3 +53,8 @@ it('enforces matrix shape and finite samples for every reduction', () => {
     for (const input of [[[1], [1, 2]], [[1, 2], [1]], [[1, NaN]], [[Infinity]]])
       expect(() => reduce(input)).toThrow();
 });
+it('avoids overflow while averaging large representable spectra', () => {
+  const value = Math.fround(3e38);
+  expect(meanSpectrum([[value], [value]])[0]).toBe(value);
+  expect(meanSpectrum([[1e8], [1], [-1e8]])[0]).toBeCloseTo(1 / 3, 5);
+});
