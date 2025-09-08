@@ -62,3 +62,14 @@ it('enforces mode and kernel contracts even on empty and same-rate inputs', () =
     expect(() => resampleMono(audio.getChannel(0), 8000, 8000, 'unknown' as never)).toThrow();
   }
 });
+it('attenuates frequencies above the new Nyquist when downsampling', () => {
+  const source = Float32Array.from({ length: 2048 }, (_, i) =>
+    Math.sin((2 * Math.PI * 6000 * i) / 16000),
+  );
+  const filtered = resampleMono(source, 16000, 8000, 'sinc').subarray(32, -32);
+  const aliased = resampleMono(source, 16000, 8000, 'nearest').subarray(32, -32);
+  const energy = (samples: Float32Array) =>
+    Math.sqrt(samples.reduce((sum, v) => sum + v * v, 0) / samples.length);
+  expect(energy(filtered)).toBeLessThan(0.02);
+  expect(energy(aliased)).toBeGreaterThan(0.6);
+});

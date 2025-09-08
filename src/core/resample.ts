@@ -41,6 +41,10 @@ export function resample(
   }
   const ratio = targetSampleRate / buffer.sampleRate;
   const outSamples = Math.max(1, Math.round(buffer.numSamples * ratio));
+  const cutoff = Math.min(1, ratio),
+    radius = Math.ceil(halfWidth / cutoff);
+  if (mode === 'sinc' && radius > 512)
+    throw new RangeError('Sinc conversion ratio exceeds kernel budget');
   const out = new AudioBuffer(targetSampleRate, buffer.numChannels, outSamples);
   for (let c = 0; c < buffer.numChannels; c++) {
     const src = buffer.getChannel(c);
@@ -61,12 +65,12 @@ export function resample(
         const frac = t - center;
         let acc = 0;
         let wsum = 0;
-        for (let k = -halfWidth; k <= halfWidth; k++) {
+        for (let k = -radius; k <= radius; k++) {
           const idx = center + k;
           if (idx < 0 || idx >= src.length) continue;
           const x = k - frac;
-          const w = hannWindow(k + halfWidth, 2 * halfWidth + 1);
-          const h = sinc(x) * w;
+          const w = hannWindow(k + radius, 2 * radius + 1);
+          const h = cutoff * sinc(x * cutoff) * w;
           acc += (src[idx] ?? 0) * h;
           wsum += h;
         }
