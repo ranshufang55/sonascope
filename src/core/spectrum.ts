@@ -65,8 +65,23 @@ export function toDbPower(powerVals: ArrayLike<number>, floor: number = -120): F
 }
 
 export function halfSpectrum(magnitudes: ArrayLike<number>): Float32Array {
+  assertFiniteSamples(magnitudes);
   const n = magnitudes.length === 0 ? 0 : Math.floor(magnitudes.length / 2) + 1;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) out[i] = magnitudes[i] ?? 0;
   return out;
+}
+
+/** Inverse amplitude conversion; finite underflow maps to silence. */
+export function dbToLin(decibels: number): number {
+  assertFinite(decibels, 'decibels');
+  const value = 10 ** (decibels / 20);
+  if (!Number.isFinite(value)) throw new RangeError('Amplitude overflow');
+  return value;
+}
+export function dbToPower(decibels: number): number {
+  assertFinite(decibels, 'decibels');
+  const value = 10 ** (decibels / 10);
+  if (!Number.isFinite(value)) throw new RangeError('Power overflow');
+  return value;
 }

@@ -74,3 +74,12 @@ it('rejects malformed complex shapes, nonfinite bins and output overflow', () =>
     powerSpectrum({ re: new Float32Array([1e30]), im: new Float32Array([0]) }),
   ).toThrow();
 });
+it('round-trips amplitude and power decibels above the chosen floor', async () => {
+  const { dbToLin, dbToPower } = await import('./spectrum.js');
+  for (const db of [-100, -60, -20, 0, 6, 20]) {
+    expect(linToDb(dbToLin(db))).toBeCloseTo(db, 8);
+    expect(toDbPower([dbToPower(db)])[0]).toBeCloseTo(db, 4);
+  }
+  expect(() => dbToLin(Infinity)).toThrow();
+  expect(() => dbToPower(4000)).toThrow();
+});
