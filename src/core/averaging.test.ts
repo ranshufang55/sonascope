@@ -58,3 +58,10 @@ it('avoids overflow while averaging large representable spectra', () => {
   expect(meanSpectrum([[value], [value]])[0]).toBe(value);
   expect(meanSpectrum([[1e8], [1], [-1e8]])[0]).toBeCloseTo(1 / 3, 5);
 });
+it('rejects dimension drift in both distance directions', () => {
+  for (const distance of [spectrumDiff, spectrumL2]) {
+    expect(() => distance([1], [1, 2])).toThrow();
+    expect(() => distance([1, 2], [1])).toThrow();
+    expect(() => distance([NaN], [1])).toThrow();
+  }
+});

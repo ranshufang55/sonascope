@@ -71,7 +71,10 @@ export function medianSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Ar
 }
 
 export function spectrumDiff(a: ArrayLike<number>, b: ArrayLike<number>): Float32Array {
-  const n = Math.max(a.length, b.length);
+  assertFiniteSamples(a);
+  assertFiniteSamples(b);
+  if (a.length !== b.length) throw new RangeError('Spectrum length mismatch');
+  const n = a.length;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     out[i] = Math.abs((a[i] ?? 0) - (b[i] ?? 0));
@@ -81,7 +84,10 @@ export function spectrumDiff(a: ArrayLike<number>, b: ArrayLike<number>): Float3
 
 export function spectrumL2(a: ArrayLike<number>, b: ArrayLike<number>): number {
   let s = 0;
-  const n = Math.max(a.length, b.length);
+  assertFiniteSamples(a);
+  assertFiniteSamples(b);
+  if (a.length !== b.length) throw new RangeError('Spectrum length mismatch');
+  const n = a.length;
   for (let i = 0; i < n; i++) {
     const d = (a[i] ?? 0) - (b[i] ?? 0);
     s += d * d;
