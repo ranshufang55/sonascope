@@ -48,3 +48,8 @@ describe('spectrum averaging', () => {
     expect(maxHoldSpectrum([]).length).toBe(0);
   });
 });
+it('enforces matrix shape and finite samples for every reduction', () => {
+  for (const reduce of [meanSpectrum, medianSpectrum, maxHoldSpectrum])
+    for (const input of [[[1], [1, 2]], [[1, 2], [1]], [[1, NaN]], [[Infinity]]])
+      expect(() => reduce(input)).toThrow();
+});

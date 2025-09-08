@@ -1,6 +1,19 @@
+import { assertFiniteSamples, assertInteger, assertInRange } from './validation.js';
+function validateSpectra(spectra: ArrayLike<ArrayLike<number>>): void {
+  assertInteger(spectra.length, 'frames');
+  assertInRange(spectra.length, 0, 65536, 'frames');
+  const bins = spectra[0]?.length ?? 0;
+  if (bins * spectra.length > 2 ** 24) throw new RangeError('Spectrum matrix exceeds cell limit');
+  for (let i = 0; i < spectra.length; i++) {
+    const row = spectra[i];
+    if (!row || row.length !== bins) throw new RangeError('Spectrum matrix shape mismatch');
+    assertFiniteSamples(row);
+  }
+}
 // Spectrum averaging: mean, median, and max-hold reductions.
 
 export function meanSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Array {
+  validateSpectra(spectra);
   if (spectra.length === 0) return new Float32Array(0);
   const first = spectra[0];
   if (!first) return new Float32Array(0);
@@ -16,6 +29,7 @@ export function meanSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Arra
 }
 
 export function maxHoldSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Array {
+  validateSpectra(spectra);
   if (spectra.length === 0) return new Float32Array(0);
   const first = spectra[0];
   if (!first) return new Float32Array(0);
@@ -35,6 +49,7 @@ export function maxHoldSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32A
 }
 
 export function medianSpectrum(spectra: ArrayLike<ArrayLike<number>>): Float32Array {
+  validateSpectra(spectra);
   if (spectra.length === 0) return new Float32Array(0);
   const first = spectra[0];
   if (!first) return new Float32Array(0);
