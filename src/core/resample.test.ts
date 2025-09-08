@@ -73,3 +73,13 @@ it('attenuates frequencies above the new Nyquist when downsampling', () => {
   expect(energy(filtered)).toBeLessThan(0.02);
   expect(energy(aliased)).toBeGreaterThan(0.6);
 });
+it('matches mono and buffer resampling in both rate directions', () => {
+  const samples = Float32Array.from({ length: 32 }, (_, i) => Math.sin(i));
+  for (const mode of ['nearest', 'linear', 'sinc'] as const)
+    for (const rate of [4000, 8000, 16000]) {
+      const input = new AudioBuffer(8000, 2, samples.length, [samples, samples]);
+      const converted = resample(input, rate, mode);
+      expect(resampleMono(samples, 8000, rate, mode)).toEqual(converted.getChannel(0));
+      expect(converted.getChannel(0)).toEqual(converted.getChannel(1));
+    }
+});
