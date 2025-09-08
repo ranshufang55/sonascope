@@ -65,3 +65,12 @@ it('applies the same lower floor to scalar, magnitude and power conversions', ()
     expect(() => toDbPower([value])).toThrow();
   }
 });
+it('rejects malformed complex shapes, nonfinite bins and output overflow', () => {
+  for (const fn of [magnitude, powerSpectrum]) {
+    expect(() => fn({ re: new Float32Array(2), im: new Float32Array(1) })).toThrow();
+    expect(() => fn({ re: new Float32Array([NaN]), im: new Float32Array([0]) })).toThrow();
+  }
+  expect(() =>
+    powerSpectrum({ re: new Float32Array([1e30]), im: new Float32Array([0]) }),
+  ).toThrow();
+});

@@ -4,23 +4,33 @@ import { assertFinite, assertFiniteSamples, assertNonNegative } from './validati
 import type { ComplexArray } from './fft.js';
 
 export function magnitude(input: ComplexArray): Float32Array {
+  if (input.re.length !== input.im.length) throw new RangeError('Complex spectrum shape mismatch');
+  assertFiniteSamples(input.re);
+  assertFiniteSamples(input.im);
   const n = input.re.length;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const re = input.re[i] ?? 0;
     const im = input.im[i] ?? 0;
-    out[i] = Math.hypot(re, im);
+    const value = Math.hypot(re, im);
+    if (!Number.isFinite(Math.fround(value))) throw new RangeError('Magnitude exceeds Float32');
+    out[i] = value;
   }
   return out;
 }
 
 export function powerSpectrum(input: ComplexArray): Float32Array {
+  if (input.re.length !== input.im.length) throw new RangeError('Complex spectrum shape mismatch');
+  assertFiniteSamples(input.re);
+  assertFiniteSamples(input.im);
   const n = input.re.length;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const re = input.re[i] ?? 0;
     const im = input.im[i] ?? 0;
-    out[i] = re * re + im * im;
+    const value = re * re + im * im;
+    if (!Number.isFinite(Math.fround(value))) throw new RangeError('Power exceeds Float32');
+    out[i] = value;
   }
   return out;
 }
