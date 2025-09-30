@@ -130,3 +130,14 @@ describe('fft', () => {
     expect(() => fft(samples)).toThrow(/<= 1048576/);
   });
 });
+it('preserves both planes when a transform would exceed Float32 range', () => {
+  for (const transform of [fftInPlace, ifftInPlace]) {
+    const re = new Float32Array([1e38, 1e38, 1e38, 1e38]),
+      im = new Float32Array([1, 2, 3, 4]);
+    const beforeRe = re.slice(),
+      beforeIm = im.slice();
+    expect(() => transform(re, im)).toThrow();
+    expect(re).toEqual(beforeRe);
+    expect(im).toEqual(beforeIm);
+  }
+});
