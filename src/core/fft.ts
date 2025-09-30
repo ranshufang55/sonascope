@@ -66,6 +66,12 @@ export function fftInPlace(re: Float32Array, im: Float32Array): void {
   assertFiniteSamples(re, 're');
   assertFiniteSamples(im, 'im');
   assertTransformRange(re, im);
+  if (
+    re.buffer === im.buffer &&
+    re.byteOffset < im.byteOffset + im.byteLength &&
+    im.byteOffset < re.byteOffset + re.byteLength
+  )
+    throw new RangeError('Complex planes must not overlap');
   const n = re.length;
   const table = bitReversalTable(n);
   for (let i = 0; i < n; i++) {
@@ -110,6 +116,12 @@ export function ifftInPlace(re: Float32Array, im: Float32Array): void {
   assertFiniteSamples(re, 're');
   assertFiniteSamples(im, 'im');
   assertTransformRange(re, im);
+  if (
+    re.buffer === im.buffer &&
+    re.byteOffset < im.byteOffset + im.byteLength &&
+    im.byteOffset < re.byteOffset + re.byteLength
+  )
+    throw new RangeError('Complex planes must not overlap');
   const n = re.length;
   for (let i = 0; i < n; i++) im[i] = -(im[i] ?? 0);
   fftInPlace(re, im);

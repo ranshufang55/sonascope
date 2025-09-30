@@ -141,3 +141,12 @@ it('preserves both planes when a transform would exceed Float32 range', () => {
     expect(im).toEqual(beforeIm);
   }
 });
+it('rejects partially overlapping transform planes and accepts disjoint views', () => {
+  const storage = new Float32Array(12);
+  const re = storage.subarray(0, 8),
+    im = storage.subarray(4, 12);
+  expect(() => fftInPlace(re, im)).toThrow();
+  expect(() => ifftInPlace(re, im)).toThrow();
+  const separate = new Float32Array(16);
+  expect(() => fftInPlace(separate.subarray(0, 8), separate.subarray(8, 16))).not.toThrow();
+});
