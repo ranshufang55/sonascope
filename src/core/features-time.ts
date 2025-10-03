@@ -2,9 +2,10 @@
 // and DC offset. All routines accept ArrayLike<number> so they can be
 // called on slices, channel data, or external arrays.
 
-import { assertFinite, assertPositive } from './validation.js';
+import { assertFinite, assertPositive, assertFiniteSamples } from './validation.js';
 
 export function rms(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   if (samples.length === 0) return 0;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) {
@@ -15,6 +16,7 @@ export function rms(samples: ArrayLike<number>): number {
 }
 
 export function peak(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   let p = 0;
   for (let i = 0; i < samples.length; i++) {
     const v = Math.abs(samples[i] ?? 0);
@@ -30,6 +32,7 @@ export function crestFactor(samples: ArrayLike<number>): number {
 }
 
 export function zeroCrossingRate(samples: ArrayLike<number>, sampleRate: number): number {
+  assertFiniteSamples(samples);
   assertPositive(sampleRate, 'sampleRate');
   if (samples.length < 2) return 0;
   let zc = 0;
@@ -42,6 +45,7 @@ export function zeroCrossingRate(samples: ArrayLike<number>, sampleRate: number)
 }
 
 export function dcOffset(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   if (samples.length === 0) return 0;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) sum += samples[i] ?? 0;
@@ -49,6 +53,7 @@ export function dcOffset(samples: ArrayLike<number>): number {
 }
 
 export function energy(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   if (samples.length === 0) return 0;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) {
@@ -59,6 +64,7 @@ export function energy(samples: ArrayLike<number>): number {
 }
 
 export function mean(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   if (samples.length === 0) return 0;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) sum += samples[i] ?? 0;
@@ -66,6 +72,7 @@ export function mean(samples: ArrayLike<number>): number {
 }
 
 export function variance(samples: ArrayLike<number>): number {
+  assertFiniteSamples(samples);
   if (samples.length === 0) return 0;
   const m = mean(samples);
   let s = 0;
@@ -77,6 +84,7 @@ export function variance(samples: ArrayLike<number>): number {
 }
 
 export function assertKnownLength(samples: ArrayLike<number>, label: string = 'samples'): void {
+  assertFiniteSamples(samples, label);
   if (samples.length === 0) {
     throw new RangeError(`${label} must not be empty`);
   }
