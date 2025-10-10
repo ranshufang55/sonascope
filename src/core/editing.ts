@@ -1,5 +1,5 @@
 import { AudioBuffer } from './buffer.js';
-import { assertInteger, assertInRange } from './validation.js';
+import { assertInteger, assertInRange, assertFinite } from './validation.js';
 export function sliceAudio(audio: AudioBuffer, start: number, end = audio.numSamples): AudioBuffer {
   assertInteger(start, 'start');
   assertInteger(end, 'end');
@@ -33,5 +33,14 @@ export function reverseAudio(audio: AudioBuffer): AudioBuffer {
     audio.numChannels,
     audio.numSamples,
     audio.data.map((channel) => new Float32Array(channel).reverse()),
+  );
+}
+export function gainAudio(audio: AudioBuffer, gain: number): AudioBuffer {
+  assertFinite(gain, 'gain');
+  return new AudioBuffer(
+    audio.sampleRate,
+    audio.numChannels,
+    audio.numSamples,
+    audio.data.map((channel) => Float32Array.from(channel, (value) => value * gain)),
   );
 }

@@ -29,3 +29,14 @@ it('reversal is an involution for odd, even and empty recordings', () => {
     expect(edit.reverseAudio(edit.reverseAudio(input)).getChannel(0)).toEqual(input.getChannel(0));
   }
 });
+it('supports mute and phase inversion while rejecting output overflow', () => {
+  const audio = new AudioBuffer(8000, 1, 2, [new Float32Array([1, -0.5])]);
+  expect(edit.gainAudio(audio, -2).getChannel(0)).toEqual(new Float32Array([-2, 1]));
+  expect(
+    edit
+      .gainAudio(audio, 0)
+      .getChannel(0)
+      .every((v) => v === 0),
+  ).toBe(true);
+  expect(() => edit.gainAudio(audio, 1e40)).toThrow();
+});
