@@ -27,3 +27,4 @@ export * from './streaming.js';
 export * from './vad.js';
 export * from './validation.js';
 export * from './window.js';
+export * from './editing.js';
