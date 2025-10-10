@@ -52,3 +52,24 @@ it('exports stable frame columns and rejects corrupt numeric cells', async () =>
   analysis.frames[0]!.rms = NaN;
   expect(() => analysisToCsv(analysis)).toThrow();
 });
+it('rejects drift across every analysis root field', () => {
+  const input = analyzeAudio(new AudioBuffer(8, 1, 4), {
+    fftSize: 4,
+    hopSize: 4,
+    window: 'rectangular',
+  });
+  const corruptions = {
+    schemaVersion: 2,
+    sampleRate: NaN,
+    channels: 0,
+    numSamples: -1,
+    duration: 999,
+    fftSize: 3,
+    hopSize: 0,
+    window: 'unknown',
+    frequencies: new Float32Array([1, 2, 3]),
+    frames: [{ ...input.frames[0], startSample: 999 }],
+  };
+  for (const [key, value] of Object.entries(corruptions))
+    expect(() => serializeAnalysis({ ...input, [key]: value } as typeof input)).toThrow();
+});
