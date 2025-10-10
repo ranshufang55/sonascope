@@ -44,3 +44,26 @@ export function gainAudio(audio: AudioBuffer, gain: number): AudioBuffer {
     audio.data.map((channel) => Float32Array.from(channel, (value) => value * gain)),
   );
 }
+export function fadeAudio(
+  audio: AudioBuffer,
+  fadeInSamples: number,
+  fadeOutSamples: number,
+): AudioBuffer {
+  assertInteger(fadeInSamples, 'fadeInSamples');
+  assertInteger(fadeOutSamples, 'fadeOutSamples');
+  assertInRange(fadeInSamples, 0, audio.numSamples, 'fadeInSamples');
+  assertInRange(fadeOutSamples, 0, audio.numSamples, 'fadeOutSamples');
+  const channels = audio.data.map((channel) =>
+    Float32Array.from(
+      channel,
+      (sample, i) =>
+        sample *
+        Math.min(
+          1,
+          fadeInSamples <= 1 ? 1 : i / (fadeInSamples - 1),
+          fadeOutSamples <= 1 ? 1 : (audio.numSamples - 1 - i) / (fadeOutSamples - 1),
+        ),
+    ),
+  );
+  return new AudioBuffer(audio.sampleRate, audio.numChannels, audio.numSamples, channels);
+}

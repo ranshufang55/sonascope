@@ -40,3 +40,10 @@ it('supports mute and phase inversion while rejecting output overflow', () => {
   ).toBe(true);
   expect(() => edit.gainAudio(audio, 1e40)).toThrow();
 });
+it('fades both edges symmetrically and keeps a unity interior', () => {
+  const audio = new AudioBuffer(8000, 1, 8, [new Float32Array(8).fill(1)]);
+  expect(Array.from(edit.fadeAudio(audio, 3, 3).getChannel(0))).toEqual([
+    0, 0.5, 1, 1, 1, 1, 0.5, 0,
+  ]);
+  expect(edit.fadeAudio(audio, 0, 0).getChannel(0)).toEqual(audio.getChannel(0));
+});
