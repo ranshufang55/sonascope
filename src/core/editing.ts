@@ -27,3 +27,11 @@ export function concatAudio(parts: readonly AudioBuffer[]): AudioBuffer {
   }
   return out;
 }
+export function reverseAudio(audio: AudioBuffer): AudioBuffer {
+  return new AudioBuffer(
+    audio.sampleRate,
+    audio.numChannels,
+    audio.numSamples,
+    audio.data.map((channel) => new Float32Array(channel).reverse()),
+  );
+}

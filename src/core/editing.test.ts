@@ -23,3 +23,9 @@ it('reassembles arbitrary adjacent slices including empty edges', () => {
   expect(() => edit.concatAudio([source, new AudioBuffer(16000, 1, 1)])).toThrow();
   expect(() => edit.concatAudio([source, new AudioBuffer(8000, 2, 1)])).toThrow();
 });
+it('reversal is an involution for odd, even and empty recordings', () => {
+  for (const length of [0, 1, 2, 5]) {
+    const input = new AudioBuffer(8000, 1, length, [Float32Array.from({ length }, (_, i) => i)]);
+    expect(edit.reverseAudio(edit.reverseAudio(input)).getChannel(0)).toEqual(input.getChannel(0));
+  }
+});
