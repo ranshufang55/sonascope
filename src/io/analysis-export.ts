@@ -59,6 +59,7 @@ export function serializeAnalysis(analysis: AudioAnalysis): string {
 }
 
 export function analysisToCsv(analysis: AudioAnalysis): string {
+  validateAnalysis(analysis);
   const headers = [
     'index',
     'startSample',

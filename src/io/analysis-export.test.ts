@@ -73,3 +73,15 @@ it('rejects drift across every analysis root field', () => {
   for (const [key, value] of Object.entries(corruptions))
     expect(() => serializeAnalysis({ ...input, [key]: value } as typeof input)).toThrow();
 });
+it('rejects inconsistent spectral shapes in both serialization formats', async () => {
+  const { analysisToCsv } = await import('./analysis-export.js');
+  for (const exporter of [serializeAnalysis, analysisToCsv]) {
+    const input = analyzeAudio(new AudioBuffer(8, 1, 4), {
+      fftSize: 4,
+      hopSize: 4,
+      window: 'rectangular',
+    });
+    input.frames[0]!.decibels = new Float32Array(2);
+    expect(() => exporter(input)).toThrow();
+  }
+});
