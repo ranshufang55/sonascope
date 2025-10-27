@@ -93,3 +93,9 @@ it('writes standard floating-point format extensions and fact sample counts', as
     expect(wav.decodeWav(bytes).numSamples).toBe(3);
   }
 });
+it('validates fact counts without requiring them in legacy floating files', () => {
+  const bytes = wav.encodeWav(new AudioBuffer(8000, 1, 3), 'float32');
+  new DataView(bytes.buffer).setUint32(46, 99, true);
+  expect(() => wav.parseWav(bytes)).toThrow('fact');
+  expect(wav.parseWav(fixture(32, 1, 4, true)).frames).toBe(4);
+});

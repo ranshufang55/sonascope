@@ -57,6 +57,10 @@ export function parseWav(input: ByteSource): WavInfo {
     throw new RangeError('Inconsistent WAVE alignment or byte rate');
   if (data.length % blockAlign !== 0) throw new RangeError('Truncated interleaved audio frame');
   const frames = data.length / blockAlign;
+  const facts = chunks.filter((chunk) => chunk.id === 'fact');
+  if (facts.length > 1) throw new RangeError('Duplicate WAVE fact chunks');
+  if (facts[0] && (facts[0].length < 4 || view.getUint32(facts[0].offset, true) !== frames))
+    throw new RangeError('WAVE fact sample count mismatch');
   if (frames * channels > MAX_SAMPLES_PER_BUFFER)
     throw new RangeError('WAVE sample count exceeds the memory limit');
   return {
