@@ -5,3 +5,4 @@ export type { RiffChunk } from './riff.js';
 export { parseWav, decodeWav, encodeWav } from './wav.js';
 export type { WavInfo, WavEncoding } from './wav.js';
 export { serializeAnalysis, analysisToCsv } from './analysis-export.js';
+export { validateAnalysis } from './analysis-export.js';
