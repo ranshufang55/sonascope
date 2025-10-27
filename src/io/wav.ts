@@ -109,20 +109,27 @@ export function encodeWav(audio: AudioBuffer, encoding: WavEncoding = 'pcm16'): 
   const bits = Number(encoding.replace(/[^0-9]/g, ''));
   const align = (audio.numChannels * bits) / 8;
   const bytes = audio.numSamples * align;
-  const view = new DataView(new ArrayBuffer(44 + bytes + (bytes % 2)));
+  const header = floating ? 58 : 44;
+  const view = new DataView(new ArrayBuffer(header + bytes + (bytes % 2)));
   writeFourCC(view, 0, 'RIFF');
   view.setUint32(4, view.byteLength - 8, true);
   writeFourCC(view, 8, 'WAVE');
   writeFourCC(view, 12, 'fmt ');
-  view.setUint32(16, 16, true);
+  view.setUint32(16, floating ? 18 : 16, true);
   view.setUint16(20, floating ? 3 : 1, true);
   view.setUint16(22, audio.numChannels, true);
   view.setUint32(24, audio.sampleRate, true);
   view.setUint32(28, audio.sampleRate * align, true);
   view.setUint16(32, align, true);
   view.setUint16(34, bits, true);
-  writeFourCC(view, 36, 'data');
-  view.setUint32(40, bytes, true);
+  if (floating) {
+    view.setUint16(36, 0, true);
+    writeFourCC(view, 38, 'fact');
+    view.setUint32(42, 4, true);
+    view.setUint32(46, audio.numSamples, true);
+  }
+  writeFourCC(view, header - 8, 'data');
+  view.setUint32(header - 4, bytes, true);
   const writers = {
     pcm8: pcm.writePcm8,
     pcm16: pcm.writePcm16,
@@ -135,7 +142,7 @@ export function encodeWav(audio: AudioBuffer, encoding: WavEncoding = 'pcm16'): 
     for (let channel = 0; channel < audio.numChannels; channel++) {
       writers[encoding](
         view,
-        44 + frame * align + (channel * bits) / 8,
+        header + frame * align + (channel * bits) / 8,
         audio.getChannel(channel)[frame]!,
       );
     }

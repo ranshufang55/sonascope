@@ -78,3 +78,18 @@ it('reads standard WAVE_FORMAT_EXTENSIBLE PCM subformats', () => {
   view.setUint8(59, 0);
   expect(() => wav.parseWav(view)).toThrow(/subformat/);
 });
+it('writes standard floating-point format extensions and fact sample counts', async () => {
+  const { scanRiff } = await import('./riff.js');
+  const input = new AudioBuffer(8000, 1, 3);
+  for (const encoding of ['float32', 'float64'] as const) {
+    const bytes = wav.encodeWav(input, encoding),
+      chunks = scanRiff(bytes);
+    expect(chunks.map((c) => [c.id, c.length])).toEqual([
+      ['fmt ', 18],
+      ['fact', 4],
+      ['data', encoding === 'float32' ? 12 : 24],
+    ]);
+    expect(wav.parseWav(bytes).dataOffset).toBe(58);
+    expect(wav.decodeWav(bytes).numSamples).toBe(3);
+  }
+});
