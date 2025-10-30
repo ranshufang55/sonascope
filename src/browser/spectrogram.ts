@@ -28,6 +28,11 @@ export function spectrogramPixels(
   const colors = makePalette(options.palette),
     out = new Uint8ClampedArray(width * height * 4);
   const bins = frames[0]?.length ?? 0;
+  assertInteger(frames.length, 'frames');
+  assertInRange(frames.length, 0, 4096, 'frames');
+  assertInteger(bins, 'bins');
+  assertInRange(bins, 0, 65537, 'bins');
+  if (frames.length * bins > 2 ** 22) throw new RangeError('Spectrogram data exceeds cell budget');
   const scale = options.frequencyScale ?? 'linear';
   if (!['linear', 'log'].includes(scale)) throw new RangeError('Unknown frequency scale');
   const binAt = (fraction: number) =>
