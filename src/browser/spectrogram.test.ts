@@ -29,3 +29,13 @@ it('pins time direction, frequency direction and every output color channel', ()
   ).toEqual([255, 255, 255, 255]);
   expect(() => spectrogramPixels([[0], [0, 1]], 2, 2)).toThrow();
 });
+it('retains DC and upper bins under logarithmic frequency mapping', () => {
+  const pixels = spectrogramPixels([[0, -100, -100, -100, -100, -100, -100, 0]], 1, 8, {
+    palette: 'mono',
+    frequencyScale: 'log',
+  });
+  expect(Array.from(pixels.slice(0, 4))).toEqual([255, 255, 255, 255]);
+  expect(Array.from(pixels.slice(-4))).toEqual([255, 255, 255, 255]);
+  expect(Array.from(pixels).some((v, i) => i % 4 === 0 && v === 0)).toBe(true);
+  expect(() => spectrogramPixels([[0]], 1, 1, { frequencyScale: 'bad' as never })).toThrow();
+});

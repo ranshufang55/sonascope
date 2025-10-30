@@ -8,13 +8,14 @@ export interface SpectrogramOptions {
   floor?: number;
   ceiling?: number;
   palette?: PaletteName;
+  frequencyScale?: 'linear' | 'log';
 }
 /** Time increases rightwards; bin zero is the bottom row. */
 export function spectrogramPixels(
   frames: readonly ArrayLike<number>[],
   width: number,
   height: number,
-  options: Pick<SpectrogramOptions, 'floor' | 'ceiling' | 'palette'> = {},
+  options: Pick<SpectrogramOptions, 'floor' | 'ceiling' | 'palette' | 'frequencyScale'> = {},
 ): Uint8ClampedArray {
   assertInteger(width, 'width');
   assertInteger(height, 'height');
@@ -27,6 +28,10 @@ export function spectrogramPixels(
   const colors = makePalette(options.palette),
     out = new Uint8ClampedArray(width * height * 4);
   const bins = frames[0]?.length ?? 0;
+  const scale = options.frequencyScale ?? 'linear';
+  if (!['linear', 'log'].includes(scale)) throw new RangeError('Unknown frequency scale');
+  const binAt = (fraction: number) =>
+    scale === 'linear' ? fraction * bins : Math.expm1(fraction * Math.log1p(bins));
   for (const frame of frames) {
     if (frame.length !== bins) throw new RangeError('All frames must have the same number of bins');
     for (let i = 0; i < bins; i++) normalizeDb(frame[i]!, floor, ceiling);
@@ -35,8 +40,8 @@ export function spectrogramPixels(
     const first = Math.floor((x / width) * frames.length),
       last = Math.ceil(((x + 1) / width) * frames.length);
     for (let y = 0; y < height; y++) {
-      const low = Math.floor(((height - 1 - y) / height) * bins),
-        high = Math.ceil(((height - y) / height) * bins);
+      const low = Math.max(0, Math.floor(binAt((height - 1 - y) / height))),
+        high = Math.min(bins, Math.ceil(binAt((height - y) / height)));
       let level = 0;
       for (let t = first; t < last; t++)
         for (let b = low; b < high; b++)
