@@ -284,6 +284,7 @@ function paintLive(time: number): void {
         });
         setText('rms', `${linToDb(rms(input)).toFixed(1)} dB`);
         setText('frame-count', `${liveFrames.length} live frames`);
+        setText('spectrogram-end', `${(liveFrames.length / 10).toFixed(1)} s history`);
       }
     } else {
       setText('spectrum-mode', 'FIRST FRAME');
@@ -308,6 +309,12 @@ element('microphone').addEventListener('click', async () => {
     if (!['microphone'].includes(session.state)) return;
     liveFrames = [];
     setText('source-title', 'Live microphone');
+    setText('duration', 'Live');
+    setText('centroid', '—');
+    setText('resolution', `${((session.sampleRate ?? 48000) / 2048).toFixed(1)} Hz`);
+    setText('nyquist', `${(session.sampleRate ?? 48000) / 2000} kHz`);
+    setText('range-start', 'Live input');
+    setText('range-end', '2048 samples');
     setText('source-detail', `${(session.sampleRate ?? 0) / 1000} kHz · monitoring muted`);
     element('microphone').classList.add('active');
     status('Microphone active. Use Stop to release the device.');
