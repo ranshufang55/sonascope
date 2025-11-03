@@ -25,6 +25,7 @@ let samples = downmixToMono(audio).getChannel(0);
 let pyramid: Pyramid = buildPyramid(samples);
 let viewport = new Viewport(samples.length);
 let analysis: AudioAnalysis;
+let frameIndex = 0;
 let loadGeneration = 0;
 let sourceDetail = '';
 let previousState: string = 'idle';
@@ -40,7 +41,7 @@ function status(message: string, error = false): void {
 function draw(): void {
   if (session.state === 'microphone') return;
   drawWaveform(wave, samples, { ...canvasSize(wave), range: viewport.range, pyramid });
-  drawSpectrum(spectrum, analysis.frames[0]?.decibels ?? [], {
+  drawSpectrum(spectrum, analysis.frames[frameIndex]?.decibels ?? [], {
     ...canvasSize(spectrum),
     floor: Number(select('db-floor')),
     color: '#a89bff',
@@ -62,6 +63,8 @@ function draw(): void {
   };
   const legend = document.querySelector<HTMLElement>('.color-key i');
   if (legend) legend.style.background = colors[select('palette') as PaletteName];
+  setText('frame-time', `${(analysis.frames[frameIndex]?.timeSeconds ?? 0).toFixed(3)} s`);
+  setText('spectrum-mode', `FRAME ${frameIndex + 1}`);
   setText('range-start', `${(viewport.range.start / audio.sampleRate).toFixed(2)} s`);
   setText('range-end', `${(viewport.range.end / audio.sampleRate).toFixed(2)} s`);
 }
@@ -72,6 +75,10 @@ function analyze(): void {
     hopSize: Math.max(fftSize / 4, Math.ceil(audio.numSamples / 1000)),
     window: select('window') as WindowType,
   });
+  frameIndex = Math.min(frameIndex, Math.max(0, analysis.frames.length - 1));
+  const slider = element<HTMLInputElement>('analysis-frame');
+  slider.max = String(Math.max(0, analysis.frames.length - 1));
+  slider.value = String(frameIndex);
   setText('duration', `${audio.getDuration().toFixed(2)} s`);
   setText('rms', `${linToDb(rms(samples)).toFixed(1)} dB`);
   const centroid =
@@ -294,7 +301,7 @@ function paintLive(time: number): void {
         setText('spectrogram-end', `${(liveFrames.length / 10).toFixed(1)} s history`);
       }
     } else {
-      setText('spectrum-mode', 'FIRST FRAME');
+      setText('spectrum-mode', `FRAME ${frameIndex + 1}`);
     }
   }
   requestAnimationFrame(paintLive);
@@ -351,3 +358,8 @@ element('export-png').addEventListener('click', () =>
     else status('Image export failed', true);
   }, 'image/png'),
 );
+
+element<HTMLInputElement>('analysis-frame').addEventListener('input', (event) => {
+  frameIndex = Number((event.target as HTMLInputElement).value);
+  draw();
+});

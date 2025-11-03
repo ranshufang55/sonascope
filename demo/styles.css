@@ -657,3 +657,50 @@ footer > span:first-child {
     transition: none !important;
   }
 }
+
+.frame-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: #a6b5c7;
+  margin: 14px 0;
+}
+.frame-selector input {
+  flex: 1;
+  accent-color: #5fe8d5;
+  min-width: 40px;
+}
+.frame-selector output {
+  min-width: 54px;
+  font-variant-numeric: tabular-nums;
+}
+.visuals {
+  display: flex;
+  flex-direction: column;
+}
+.lower-plots {
+  flex: 1;
+}
+.lower-plots .plot-panel {
+  display: flex;
+  flex-direction: column;
+}
+.lower-plots .plot-body {
+  flex: 1;
+  min-height: 240px;
+}
+.lower-plots canvas {
+  position: absolute;
+  left: 28px;
+  top: 10px;
+  width: calc(100% - 38px);
+  height: calc(100% - 10px);
+}
+@media (max-width: 760px) {
+  .lower-plots .plot-body {
+    height: 200px;
+    min-height: 200px;
+    flex: auto;
+  }
+}
