@@ -26,6 +26,8 @@ let pyramid: Pyramid = buildPyramid(samples);
 let viewport = new Viewport(samples.length);
 let analysis: AudioAnalysis;
 let loadGeneration = 0;
+let sourceDetail = '';
+let previousState: string = 'idle';
 let sourceName = SIGNAL_LABELS.harmonics;
 const wave = element<HTMLCanvasElement>('waveform'),
   spectrum = element<HTMLCanvasElement>('spectrum'),
@@ -88,6 +90,7 @@ function choose(next: AudioBuffer, name: string, synthetic: boolean): void {
     'source-detail',
     `${synthetic ? 'Synthetic signal' : 'Local file'} · ${audio.sampleRate / 1000} kHz · ${audio.numChannels === 1 ? 'mono' : audio.numChannels + ' channels'}`,
   );
+  sourceDetail = element('source-detail').textContent ?? '';
   analyze();
   status('Ready to explore. Choose Play to listen.');
 }
@@ -192,6 +195,17 @@ element<HTMLInputElement>('audio-file').addEventListener('change', async (event)
 });
 
 function updateTransport(): void {
+  const current = session.state;
+  if (current !== previousState) {
+    if (previousState === 'microphone' && current !== 'microphone') {
+      element('microphone').classList.remove('active');
+      setText('source-title', sourceName);
+      setText('source-detail', sourceDetail);
+      analyze();
+    } else if (current === 'idle' && (previousState === 'playing' || previousState === 'paused'))
+      draw();
+    previousState = current;
+  }
   for (const id of [
     'export-json',
     'export-csv',
