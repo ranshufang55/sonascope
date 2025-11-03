@@ -38,6 +38,7 @@ function status(message: string, error = false): void {
   element('status').classList.toggle('error', error);
 }
 function draw(): void {
+  if (session.state === 'microphone') return;
   drawWaveform(wave, samples, { ...canvasSize(wave), range: viewport.range, pyramid });
   drawSpectrum(spectrum, analysis.frames[0]?.decibels ?? [], {
     ...canvasSize(spectrum),
@@ -139,6 +140,7 @@ wave.addEventListener(
   'wheel',
   (event) => {
     event.preventDefault();
+    if (session.state === 'microphone') return;
     const rect = wave.getBoundingClientRect();
     viewport.zoom(
       Math.exp(-Math.max(-100, Math.min(100, event.deltaY)) / 200),
@@ -150,11 +152,12 @@ wave.addEventListener(
 );
 let dragX: number | undefined;
 wave.addEventListener('pointerdown', (event) => {
+  if (session.state === 'microphone') return;
   dragX = event.clientX;
   wave.setPointerCapture(event.pointerId);
 });
 wave.addEventListener('pointermove', (event) => {
-  if (dragX === undefined) return;
+  if (dragX === undefined || session.state === 'microphone') return;
   viewport.pan(
     ((dragX - event.clientX) / wave.getBoundingClientRect().width) *
       (viewport.range.end - viewport.range.start),
