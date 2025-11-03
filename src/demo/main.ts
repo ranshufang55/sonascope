@@ -49,6 +49,7 @@ function draw(): void {
       ...canvasSize(spectrogram),
       floor: Number(select('db-floor')),
       palette: select('palette') as PaletteName,
+      frequencyScale: select('frequency-scale') as 'linear' | 'log',
     },
   );
   setText('range-start', `${(viewport.range.start / audio.sampleRate).toFixed(2)} s`);
@@ -113,7 +114,7 @@ for (const id of ['fft-size', 'window'])
       status(String(error), true);
     }
   });
-for (const id of ['db-floor', 'palette'])
+for (const id of ['db-floor', 'palette', 'frequency-scale'])
   element(id).addEventListener('change', () => {
     setText('legend-floor', select('db-floor'));
     draw();
@@ -262,6 +263,7 @@ function paintLive(time: number): void {
           ...canvasSize(spectrogram),
           floor: Number(select('db-floor')),
           palette: select('palette') as PaletteName,
+          frequencyScale: select('frequency-scale') as 'linear' | 'log',
         });
         setText('rms', `${linToDb(rms(input)).toFixed(1)} dB`);
         setText('frame-count', `${liveFrames.length} live frames`);
