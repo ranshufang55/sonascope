@@ -55,6 +55,13 @@ function draw(): void {
       frequencyScale: select('frequency-scale') as 'linear' | 'log',
     },
   );
+  const colors = {
+    ocean: 'linear-gradient(90deg,#123456,#10879d,#ecffe3)',
+    ember: 'linear-gradient(90deg,#0d0a1d,#be344d,#fff8cc)',
+    mono: 'linear-gradient(90deg,#000,#fff)',
+  };
+  const legend = document.querySelector<HTMLElement>('.color-key i');
+  if (legend) legend.style.background = colors[select('palette') as PaletteName];
   setText('range-start', `${(viewport.range.start / audio.sampleRate).toFixed(2)} s`);
   setText('range-end', `${(viewport.range.end / audio.sampleRate).toFixed(2)} s`);
 }
