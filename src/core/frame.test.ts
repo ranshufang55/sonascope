@@ -66,3 +66,8 @@ it('reconstructs the observable interior with a Hann window', () => {
   for (let i = 1; i < input.length - 1; i++) expect(output[i]).toBeCloseTo(input[i]!, 4);
   expect(output[0]).toBe(0);
 });
+it('rejects nonfinite frame samples and oversized overlap matrices', () => {
+  expect(() => frameSignal([1, NaN, 2, 3], 4, { hopSize: 2 })).toThrow();
+  expect(() => frameSignal([1, 2], 1.5, { hopSize: 1 })).toThrow();
+  expect(() => frameSignal(new Float32Array(8192), 4096, { hopSize: 1 })).toThrow();
+});

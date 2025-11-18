@@ -3,7 +3,7 @@
 import { fft, ifft, ifftInPlace, fftInPlace, type ComplexArray } from './fft.js';
 import { applyWindow, makeWindow, type WindowType } from './window.js';
 import { frameCount } from './sample-rate.js';
-import { assertPositive } from './validation.js';
+import { assertPositive, assertInteger, assertFiniteSamples, assertInRange } from './validation.js';
 
 export interface FrameOptions {
   hopSize: number;
@@ -15,9 +15,13 @@ export function frameSignal(
   frameSize: number,
   options: FrameOptions,
 ): Float32Array[] {
-  assertPositive(frameSize, 'frameSize');
-  assertPositive(options.hopSize, 'hopSize');
+  assertInteger(frameSize, 'frameSize');
+  assertInRange(frameSize, 1, 2 ** 20, 'frameSize');
+  assertInteger(options.hopSize, 'hopSize');
+  assertInRange(options.hopSize, 1, 2 ** 24, 'hopSize');
+  assertFiniteSamples(samples);
   const frames = frameCount(samples.length, frameSize, options.hopSize);
+  if (frames * frameSize > 2 ** 24) throw new RangeError('Frame matrix exceeds sample budget');
   const out: Float32Array[] = new Array(frames);
   const win = options.window ? makeWindow(options.window, frameSize) : null;
   for (let f = 0; f < frames; f++) {
@@ -35,7 +39,8 @@ export function overlapAdd(
   hopSize: number,
   totalLength?: number,
 ): Float32Array {
-  assertPositive(frameSize, 'frameSize');
+  assertInteger(frameSize, 'frameSize');
+  assertInRange(frameSize, 1, 2 ** 20, 'frameSize');
   assertPositive(hopSize, 'hopSize');
   if (frames.length === 0) return new Float32Array(0);
   const length = totalLength ?? Math.max(0, (frames.length - 1) * hopSize + frameSize);
