@@ -1,8 +1,10 @@
 import { AudioBuffer } from '../core/buffer.js';
 import { decodeWav } from '../io/wav.js';
 export async function loadAudioFile(file: File): Promise<AudioBuffer> {
+  if (!Number.isSafeInteger(file.size) || file.size < 0) throw new RangeError('Invalid file size');
   if (file.size > 20 * 1024 * 1024) throw new RangeError('Choose a file smaller than 20 MB');
   const bytes = await file.arrayBuffer();
+  if (bytes.byteLength > 20 * 1024 * 1024) throw new RangeError('Choose a file smaller than 20 MB');
   let audio: AudioBuffer;
   const prefix = new Uint8Array(bytes, 0, Math.min(12, bytes.byteLength));
   if (
