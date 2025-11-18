@@ -363,3 +363,17 @@ element<HTMLInputElement>('analysis-frame').addEventListener('input', (event) =>
   frameIndex = Number((event.target as HTMLInputElement).value);
   draw();
 });
+
+spectrogram.addEventListener('pointerdown', (event) => {
+  if (session.state === 'microphone' || analysis.frames.length === 0) return;
+  const rect = spectrogram.getBoundingClientRect();
+  frameIndex = Math.max(
+    0,
+    Math.min(
+      analysis.frames.length - 1,
+      Math.floor(((event.clientX - rect.left) / rect.width) * analysis.frames.length),
+    ),
+  );
+  element<HTMLInputElement>('analysis-frame').value = String(frameIndex);
+  draw();
+});
