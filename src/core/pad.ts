@@ -2,7 +2,12 @@
 // function returns a new array padded to the requested length on
 // either side. The input is never modified.
 
-import { assertInteger, assertNonNegative } from './validation.js';
+import {
+  assertInteger,
+  assertNonNegative,
+  assertFiniteSamples,
+  assertFinite,
+} from './validation.js';
 
 export type PaddingMode = 'zero' | 'reflect' | 'edge' | 'constant';
 
@@ -42,6 +47,12 @@ function padSamples(
   mode: PaddingMode,
   constant: number,
 ): Float32Array {
+  assertInteger(left, 'left');
+  assertInteger(right, 'right');
+  assertFiniteSamples(samples);
+  assertFinite(constant, 'constant');
+  if (samples.length + left + right > 2 ** 24 || !Number.isFinite(Math.fround(constant)))
+    throw new RangeError('Padding exceeds Float32 sample budget');
   const out = new Float32Array(samples.length + left + right);
   for (let i = 0; i < left; i++) {
     out[i] = sampleAt(samples, indexFor(samples.length, i - left, mode), constant);
@@ -77,6 +88,8 @@ function sampleAt(samples: ArrayLike<number>, idx: number, constant: number): nu
 
 export function ensureLength(samples: ArrayLike<number>, length: number): Float32Array {
   assertInteger(length, 'length');
+  assertFiniteSamples(samples);
+  if (length > 2 ** 24) throw new RangeError('Output exceeds sample budget');
   assertNonNegative(length, 'length');
   if (samples.length === length) {
     const out = new Float32Array(length);

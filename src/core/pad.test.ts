@@ -42,3 +42,13 @@ describe('padding', () => {
     expect(PADDING_MODES).toContain('reflect');
   });
 });
+it('rejects malformed padding across every public padding mode', () => {
+  for (const fn of [padZero, padReflect, padEdge, padConstant]) {
+    expect(() => fn([1], 0.5, 1)).toThrow();
+    expect(() => fn([1], 1, 0.5)).toThrow();
+    expect(() => fn([NaN], 1, 1)).toThrow();
+    expect(() => fn([1], 2 ** 24, 1)).toThrow();
+  }
+  expect(() => padConstant([1], 1, 1, Infinity)).toThrow();
+  expect(() => ensureLength([1], 2 ** 24 + 1)).toThrow();
+});
