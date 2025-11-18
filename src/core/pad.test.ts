@@ -52,3 +52,10 @@ it('rejects malformed padding across every public padding mode', () => {
   expect(() => padConstant([1], 1, 1, Infinity)).toThrow();
   expect(() => ensureLength([1], 2 ** 24 + 1)).toThrow();
 });
+it('reflects both sides over arbitrary periods and handles singleton audio', () => {
+  expect(Array.from(padReflect([1, 2, 3], 7, 7))).toEqual([
+    2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2,
+  ]);
+  expect(Array.from(padReflect([4], 3, 3))).toEqual([4, 4, 4, 4, 4, 4, 4]);
+  expect(Array.from(padReflect([], 2, 2))).toEqual([0, 0, 0, 0]);
+});

@@ -74,9 +74,10 @@ function indexFor(len: number, idx: number, mode: PaddingMode): number {
   if (mode === 'zero' || mode === 'constant') return -1;
   if (mode === 'edge') return Math.max(0, Math.min(len - 1, idx));
   if (mode === 'reflect') {
-    while (idx < 0) idx = -idx;
-    while (idx >= len) idx = 2 * len - idx - 2;
-    return Math.max(0, Math.min(len - 1, idx));
+    if (len <= 1) return len === 0 ? -1 : 0;
+    const period = 2 * (len - 1),
+      wrapped = ((idx % period) + period) % period;
+    return wrapped < len ? wrapped : period - wrapped;
   }
   return -1;
 }
