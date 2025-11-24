@@ -1,5 +1,6 @@
 // Framing, overlap-add, STFT, and ISTFT.
 
+import { isPow2 } from './pow2.js';
 import { fft, ifft, ifftInPlace, fftInPlace, type ComplexArray } from './fft.js';
 import { applyWindow, makeWindow, type WindowType } from './window.js';
 import { frameCount } from './sample-rate.js';
@@ -76,6 +77,7 @@ export function stft(
   hopSize: number,
   window: WindowType | null = 'hann',
 ): ComplexArray[] {
+  if (!isPow2(frameSize) || frameSize > 2 ** 20) throw new RangeError('Invalid STFT size');
   const frames = frameSignal(samples, frameSize, { hopSize, window });
   return frames.map((f) => fft(f));
 }
@@ -87,6 +89,17 @@ export function istft(
   window: WindowType | null = 'hann',
   totalLength?: number,
 ): Float32Array {
+  if (!isPow2(frameSize) || frameSize > 2 ** 20) throw new RangeError('Invalid ISTFT size');
+  assertInteger(hopSize, 'hopSize');
+  assertInRange(hopSize, 1, 2 ** 24, 'hopSize');
+  assertInteger(spectra.length, 'spectra');
+  if (spectra.length * frameSize > 2 ** 24)
+    throw new RangeError('ISTFT matrix exceeds sample budget');
+  for (let i = 0; i < spectra.length; i++) {
+    const spectrum = spectra[i];
+    if (!spectrum || spectrum.re.length !== frameSize || spectrum.im.length !== frameSize)
+      throw new RangeError('ISTFT spectrum shape mismatch');
+  }
   const win = window ? makeWindow(window, frameSize) : null;
   const frames: Float32Array[] = [];
   for (let i = 0; i < spectra.length; i++) {

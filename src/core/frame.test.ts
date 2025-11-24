@@ -78,3 +78,9 @@ it('validates all overlap-add frame and output shapes', () => {
   expect(() => overlapAdd([[1, 2]], 2, 1, 1.5)).toThrow();
   expect(overlapAdd([], 4, 2, 3)).toEqual(new Float32Array(3));
 });
+it('rejects invalid FFT geometry and mismatched inverse spectra at every boundary', () => {
+  expect(() => stft([], 3, 1)).toThrow();
+  expect(() => istft([], 3, 1)).toThrow();
+  expect(() => istft([], 4, 0)).toThrow();
+  expect(() => istft([{ re: new Float32Array(8), im: new Float32Array(8) }], 4, 2)).toThrow();
+});
