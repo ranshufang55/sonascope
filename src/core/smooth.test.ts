@@ -66,3 +66,7 @@ it('rejects nonfinite smoothing data and fractional windows before work begins',
     expect(() => fn(new Float32Array([NaN]), 1)).toThrow();
   }
 });
+it('defines both EMA endpoint weights consistently with the recurrence', () => {
+  expect(emaSmooth(new Float32Array([1, 2, 3]), 0)).toEqual(new Float32Array([1, 1, 1]));
+  expect(emaSmooth(new Float32Array([1, 2, 3]), 1)).toEqual(new Float32Array([1, 2, 3]));
+});

@@ -25,7 +25,7 @@ export function emaSmooth(samples: Float32Array, alpha: number): Float32Array {
   assertFiniteSamples(samples);
   assertInRange(alpha, 0, 1, 'alpha');
   if (alpha === 0) {
-    for (let i = 0; i < samples.length; i++) samples[i] = samples[i] ?? 0;
+    samples.fill(samples[0] ?? 0);
     return samples;
   }
   let y = samples[0] ?? 0;
