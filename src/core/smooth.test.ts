@@ -70,3 +70,7 @@ it('defines both EMA endpoint weights consistently with the recurrence', () => {
   expect(emaSmooth(new Float32Array([1, 2, 3]), 0)).toEqual(new Float32Array([1, 1, 1]));
   expect(emaSmooth(new Float32Array([1, 2, 3]), 1)).toEqual(new Float32Array([1, 2, 3]));
 });
+it('computes even medians over exactly the requested local samples', () => {
+  expect(medianSmooth(new Float32Array([1, 3, 5, 7]), 2)).toEqual(new Float32Array([2, 4, 6, 7]));
+  expect(medianSmooth(new Float32Array([1, 5, 3]), 3)).toEqual(new Float32Array([3, 3, 4]));
+});

@@ -41,15 +41,17 @@ export function medianSmooth(samples: Float32Array, window: number): Float32Arra
   assertInteger(window, 'window');
   assertPositive(window, 'window');
   assertInRange(window, 1, samples.length || 1, 'window');
-  const half = Math.floor(window / 2);
+  const left = Math.floor((window - 1) / 2),
+    right = Math.floor(window / 2);
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
-    const lo = Math.max(0, i - half);
-    const hi = Math.min(samples.length, i + half + 1);
+    const lo = Math.max(0, i - left);
+    const hi = Math.min(samples.length, i + right + 1);
     const slice: number[] = [];
     for (let k = lo; k < hi; k++) slice.push(samples[k] ?? 0);
     slice.sort((a, b) => a - b);
-    out[i] = slice[Math.floor(slice.length / 2)] ?? 0;
+    const mid = Math.floor(slice.length / 2);
+    out[i] = slice.length % 2 ? slice[mid]! : ((slice[mid - 1] ?? 0) + (slice[mid] ?? 0)) / 2;
   }
   return out;
 }
