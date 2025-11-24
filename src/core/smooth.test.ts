@@ -58,3 +58,11 @@ describe('smoothing', () => {
     }
   });
 });
+it('rejects nonfinite smoothing data and fractional windows before work begins', () => {
+  for (const fn of [onePoleSmooth, emaSmooth])
+    expect(() => fn(new Float32Array([1, NaN]), 0.5)).toThrow();
+  for (const fn of [medianSmooth, peakEnvelope, rmsEnvelope, energyEnvelope]) {
+    expect(() => fn(new Float32Array([1, 2, 3]), 1.5)).toThrow();
+    expect(() => fn(new Float32Array([NaN]), 1)).toThrow();
+  }
+});

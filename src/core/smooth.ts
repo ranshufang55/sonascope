@@ -1,8 +1,16 @@
 // Signal smoothing and envelope followers.
 
-import { assertFinite, assertInRange, assertNonNegative, assertPositive } from './validation.js';
+import {
+  assertFinite,
+  assertInRange,
+  assertNonNegative,
+  assertPositive,
+  assertInteger,
+  assertFiniteSamples,
+} from './validation.js';
 
 export function onePoleSmooth(samples: Float32Array, coefficient: number): Float32Array {
+  assertFiniteSamples(samples);
   assertInRange(coefficient, 0, 1, 'coefficient');
   let y = 0;
   for (let i = 0; i < samples.length; i++) {
@@ -14,6 +22,7 @@ export function onePoleSmooth(samples: Float32Array, coefficient: number): Float
 }
 
 export function emaSmooth(samples: Float32Array, alpha: number): Float32Array {
+  assertFiniteSamples(samples);
   assertInRange(alpha, 0, 1, 'alpha');
   if (alpha === 0) {
     for (let i = 0; i < samples.length; i++) samples[i] = samples[i] ?? 0;
@@ -28,6 +37,8 @@ export function emaSmooth(samples: Float32Array, alpha: number): Float32Array {
 }
 
 export function medianSmooth(samples: Float32Array, window: number): Float32Array {
+  assertFiniteSamples(samples);
+  assertInteger(window, 'window');
   assertPositive(window, 'window');
   assertInRange(window, 1, samples.length || 1, 'window');
   const half = Math.floor(window / 2);
@@ -44,7 +55,11 @@ export function medianSmooth(samples: Float32Array, window: number): Float32Arra
 }
 
 export function peakEnvelope(samples: ArrayLike<number>, windowSize: number): Float32Array {
-  assertPositive(windowSize, 'windowSize');
+  assertFiniteSamples(samples);
+  assertInteger(windowSize, 'windowSize');
+  assertInRange(windowSize, 1, 2 ** 20, 'windowSize');
+  if (samples.length * Math.min(windowSize, samples.length) > 2 ** 24)
+    throw new RangeError('Envelope calculation exceeds work budget');
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let p = 0;
@@ -60,7 +75,11 @@ export function peakEnvelope(samples: ArrayLike<number>, windowSize: number): Fl
 }
 
 export function rmsEnvelope(samples: ArrayLike<number>, windowSize: number): Float32Array {
-  assertPositive(windowSize, 'windowSize');
+  assertFiniteSamples(samples);
+  assertInteger(windowSize, 'windowSize');
+  assertInRange(windowSize, 1, 2 ** 20, 'windowSize');
+  if (samples.length * Math.min(windowSize, samples.length) > 2 ** 24)
+    throw new RangeError('Envelope calculation exceeds work budget');
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let sum = 0;
@@ -73,7 +92,11 @@ export function rmsEnvelope(samples: ArrayLike<number>, windowSize: number): Flo
 }
 
 export function energyEnvelope(samples: ArrayLike<number>, windowSize: number): Float32Array {
-  assertPositive(windowSize, 'windowSize');
+  assertFiniteSamples(samples);
+  assertInteger(windowSize, 'windowSize');
+  assertInRange(windowSize, 1, 2 ** 20, 'windowSize');
+  if (samples.length * Math.min(windowSize, samples.length) > 2 ** 24)
+    throw new RangeError('Envelope calculation exceeds work budget');
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let sum = 0;
@@ -86,6 +109,8 @@ export function energyEnvelope(samples: ArrayLike<number>, windowSize: number): 
 }
 
 export function assertNonEmptyWindow(window: number, label: string): void {
+  assertInteger(window, label);
+  assertPositive(window, label);
   assertNonNegative(window, label);
   assertFinite(window, label);
 }
