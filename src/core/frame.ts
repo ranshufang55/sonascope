@@ -41,9 +41,22 @@ export function overlapAdd(
 ): Float32Array {
   assertInteger(frameSize, 'frameSize');
   assertInRange(frameSize, 1, 2 ** 20, 'frameSize');
+  assertInteger(hopSize, 'hopSize');
   assertPositive(hopSize, 'hopSize');
-  if (frames.length === 0) return new Float32Array(0);
+  assertInteger(frames.length, 'frames');
+  assertInRange(frames.length, 0, 2 ** 20, 'frames');
+  if (totalLength !== undefined) {
+    assertInteger(totalLength, 'totalLength');
+    assertInRange(totalLength, 0, 2 ** 24, 'totalLength');
+  }
+  for (let i = 0; i < frames.length; i++) {
+    const frame = frames[i];
+    if (!frame || frame.length !== frameSize) throw new RangeError('Frame shape mismatch');
+    assertFiniteSamples(frame);
+  }
+  if (frames.length === 0) return new Float32Array(totalLength ?? 0);
   const length = totalLength ?? Math.max(0, (frames.length - 1) * hopSize + frameSize);
+  assertInRange(length, 0, 2 ** 24, 'length');
   const out = new Float32Array(length);
   for (let f = 0; f < frames.length; f++) {
     const frame = frames[f];

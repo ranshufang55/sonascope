@@ -71,3 +71,10 @@ it('rejects nonfinite frame samples and oversized overlap matrices', () => {
   expect(() => frameSignal([1, 2], 1.5, { hopSize: 1 })).toThrow();
   expect(() => frameSignal(new Float32Array(8192), 4096, { hopSize: 1 })).toThrow();
 });
+it('validates all overlap-add frame and output shapes', () => {
+  for (const frames of [[[1, 2]], [[1, 2, 3, 4, 5]], [[0, 0, NaN, 0]]])
+    expect(() => overlapAdd(frames, 4, 2)).toThrow();
+  expect(() => overlapAdd([[1, 2]], 2, 1, -1)).toThrow();
+  expect(() => overlapAdd([[1, 2]], 2, 1, 1.5)).toThrow();
+  expect(overlapAdd([], 4, 2, 3)).toEqual(new Float32Array(3));
+});
