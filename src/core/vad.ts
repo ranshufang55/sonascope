@@ -1,6 +1,12 @@
 // Silence detection and a simple energy + ZCR voice activity detector.
 
-import { assertNonNegative, assertPositive } from './validation.js';
+import {
+  assertNonNegative,
+  assertPositive,
+  assertInteger,
+  assertFiniteSamples,
+  assertInRange,
+} from './validation.js';
 import { rms, zeroCrossingRate } from './features-time.js';
 import { frameSignal } from './frame.js';
 
@@ -13,9 +19,11 @@ export function detectSilence(
   samples: ArrayLike<number>,
   options: { threshold?: number; minRun?: number } = {},
 ): SilenceRun[] {
+  assertFiniteSamples(samples);
   const threshold = options.threshold ?? 1e-4;
   const minRun = options.minRun ?? 1;
   assertNonNegative(threshold, 'threshold');
+  assertInteger(minRun, 'minRun');
   assertPositive(minRun, 'minRun');
   const runs: SilenceRun[] = [];
   let runStart = -1;
@@ -47,6 +55,8 @@ export function voiceActivityDetector(
   assertPositive(options.sampleRate, 'sampleRate');
   const rmsThreshold = options.rmsThreshold ?? 1e-3;
   const zcrMax = options.zcrMax ?? 0.5;
+  assertNonNegative(rmsThreshold, 'rmsThreshold');
+  assertInRange(zcrMax, 0, 1, 'zcrMax');
   const frames = frameSignal(samples, options.frameSize, {
     hopSize: options.hopSize,
     window: 'hann',

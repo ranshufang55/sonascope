@@ -34,3 +34,16 @@ describe('vad', () => {
     expect(out.slice(0, 10).every((v) => v === false)).toBe(true);
   });
 });
+it('rejects malformed silence and activity detector thresholds', () => {
+  expect(() => detectSilence([NaN])).toThrow();
+  expect(() => detectSilence([0], { minRun: 0.5 })).toThrow();
+  for (const options of [
+    { rmsThreshold: -1 },
+    { rmsThreshold: NaN },
+    { zcrMax: 2 },
+    { zcrMax: NaN },
+  ])
+    expect(() =>
+      voiceActivityDetector([], { frameSize: 4, hopSize: 2, sampleRate: 8000, ...options }),
+    ).toThrow();
+});
