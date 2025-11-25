@@ -33,3 +33,8 @@ describe('find helpers', () => {
     expect(peaks).toEqual([]);
   });
 });
+it('rejects invalid peak search data and fractional index distances', () => {
+  expect(() => findMinMax([1, NaN])).toThrow();
+  expect(() => findPeaks([0, Infinity, 0])).toThrow();
+  expect(() => findPeaks([0, 1, 0], { minDistance: 1.5 })).toThrow();
+});

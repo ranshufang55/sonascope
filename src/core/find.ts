@@ -1,6 +1,11 @@
 // Find helpers.
 
-import { assertNonNegative, assertPositive } from './validation.js';
+import {
+  assertNonNegative,
+  assertPositive,
+  assertFiniteSamples,
+  assertInteger,
+} from './validation.js';
 
 export interface MinMax {
   min: number;
@@ -10,6 +15,7 @@ export interface MinMax {
 }
 
 export function findMinMax(samples: ArrayLike<number>): MinMax {
+  assertFiniteSamples(samples);
   if (samples.length === 0) {
     return { min: 0, max: 0, minIndex: -1, maxIndex: -1 };
   }
@@ -40,9 +46,11 @@ export function findPeaks(
   samples: ArrayLike<number>,
   options: { minHeight?: number; minDistance?: number } = {},
 ): Peak[] {
+  assertFiniteSamples(samples);
   const minHeight = options.minHeight ?? 0;
   const minDistance = options.minDistance ?? 1;
   assertNonNegative(minHeight, 'minHeight');
+  assertInteger(minDistance, 'minDistance');
   assertPositive(minDistance, 'minDistance');
   const peaks: Peak[] = [];
   for (let i = 1; i < samples.length - 1; i++) {
