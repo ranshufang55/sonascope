@@ -35,3 +35,18 @@ it('handles empty pitch input and rejects excessive correlation work', () => {
   expect(() => autocorrelation(new Float32Array(8193))).toThrow();
   expect(() => estimatePitch([1, 2, 3, 4], 8000, { minLag: 1.5 })).toThrow();
 });
+it('estimates low and high tones while rejecting constant signals and silence', () => {
+  for (const frequency of [125, 250, 500, 1000]) {
+    const samples = Float32Array.from(
+      { length: 512 },
+      (_, i) => 0.3 + Math.sin((2 * Math.PI * frequency * i) / 8000),
+    );
+    expect(estimatePitch(samples, 8000).frequency).toBeCloseTo(frequency, 1);
+  }
+  for (const level of [0, 0.5])
+    expect(estimatePitch(new Float32Array(512).fill(level), 8000)).toEqual({
+      period: 0,
+      frequency: 0,
+      confidence: 0,
+    });
+});

@@ -45,17 +45,18 @@ export function estimatePitch(
   if (minLag >= maxLag) {
     return { period: 0, frequency: 0, confidence: 0 };
   }
-  const ac = autocorrelation(samples);
+  const mean = Array.from(samples).reduce((sum, value) => sum + value, 0) / samples.length;
+  const ac = autocorrelation(Float32Array.from(samples, (value) => value - mean));
   let bestLag = 0;
   let bestVal = -Infinity;
   for (let lag = minLag; lag <= maxLag; lag++) {
     const v = ac[lag] ?? 0;
-    if (v > bestVal) {
+    if (v > 0 && v > (ac[lag - 1] ?? 0) && v >= (ac[lag + 1] ?? 0) && v > bestVal) {
       bestVal = v;
       bestLag = lag;
     }
   }
-  const confidence = Math.max(0, bestVal);
+  const confidence = Number.isFinite(bestVal) ? Math.max(0, bestVal) : 0;
   if (bestLag === 0) return { period: 0, frequency: 0, confidence };
   return { period: bestLag, frequency: sampleRate / bestLag, confidence };
 }
