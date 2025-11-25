@@ -65,8 +65,8 @@ export function peakEnvelope(samples: ArrayLike<number>, windowSize: number): Fl
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let p = 0;
-    const lo = Math.max(0, i - Math.floor(windowSize / 2));
-    const hi = Math.min(samples.length, lo + windowSize);
+    const lo = Math.max(0, i - Math.floor((windowSize - 1) / 2));
+    const hi = Math.min(samples.length, i + Math.floor(windowSize / 2) + 1);
     for (let k = lo; k < hi; k++) {
       const v = Math.abs(samples[k] ?? 0);
       if (v > p) p = v;
@@ -85,8 +85,8 @@ export function rmsEnvelope(samples: ArrayLike<number>, windowSize: number): Flo
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let sum = 0;
-    const lo = Math.max(0, i - Math.floor(windowSize / 2));
-    const hi = Math.min(samples.length, lo + windowSize);
+    const lo = Math.max(0, i - Math.floor((windowSize - 1) / 2));
+    const hi = Math.min(samples.length, i + Math.floor(windowSize / 2) + 1);
     for (let k = lo; k < hi; k++) sum += (samples[k] ?? 0) * (samples[k] ?? 0);
     out[i] = Math.sqrt(sum / Math.max(1, hi - lo));
   }
@@ -102,8 +102,8 @@ export function energyEnvelope(samples: ArrayLike<number>, windowSize: number): 
   const out = new Float32Array(samples.length);
   for (let i = 0; i < samples.length; i++) {
     let sum = 0;
-    const lo = Math.max(0, i - Math.floor(windowSize / 2));
-    const hi = Math.min(samples.length, lo + windowSize);
+    const lo = Math.max(0, i - Math.floor((windowSize - 1) / 2));
+    const hi = Math.min(samples.length, i + Math.floor(windowSize / 2) + 1);
     for (let k = lo; k < hi; sum += (samples[k] ?? 0) * (samples[k] ?? 0), k++);
     out[i] = sum;
   }

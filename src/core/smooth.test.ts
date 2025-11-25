@@ -54,7 +54,7 @@ describe('smoothing', () => {
     const a = [1, 1, 1, 1];
     const out = energyEnvelope(a, 2);
     for (let i = 0; i < 4; i++) {
-      expect(out[i]).toBe(2);
+      expect(out[i]).toBe(i === 3 ? 1 : 2);
     }
   });
 });
@@ -73,4 +73,9 @@ it('defines both EMA endpoint weights consistently with the recurrence', () => {
 it('computes even medians over exactly the requested local samples', () => {
   expect(medianSmooth(new Float32Array([1, 3, 5, 7]), 2)).toEqual(new Float32Array([2, 4, 6, 7]));
   expect(medianSmooth(new Float32Array([1, 5, 3]), 3)).toEqual(new Float32Array([3, 3, 4]));
+});
+it('uses symmetric clipped neighborhoods for odd envelope windows', () => {
+  const input = new Float32Array([0, 1, 2, 3, 4]);
+  for (const fn of [peakEnvelope, rmsEnvelope, energyEnvelope])
+    expect(fn(input, 3)).toEqual(fn(input.slice().reverse(), 3).reverse());
 });
