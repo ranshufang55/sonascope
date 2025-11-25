@@ -1,8 +1,17 @@
 // Autocorrelation and a simple pitch detector.
 
-import { assertNonNegative, assertPositive } from './validation.js';
+import {
+  assertNonNegative,
+  assertPositive,
+  assertInteger,
+  assertFiniteSamples,
+  assertInRange,
+} from './validation.js';
 
 export function autocorrelation(samples: ArrayLike<number>): Float32Array {
+  assertFiniteSamples(samples);
+  if (samples.length > 8192)
+    throw new RangeError('Direct autocorrelation supports at most 8192 samples');
   if (samples.length === 0) return new Float32Array(0);
   const N = samples.length;
   const out = new Float32Array(N);
@@ -22,9 +31,15 @@ export function estimatePitch(
   sampleRate: number,
   options: { minLag?: number; maxLag?: number } = {},
 ): { period: number; frequency: number; confidence: number } {
-  assertPositive(sampleRate, 'sampleRate');
+  assertInRange(sampleRate, 1, 192000, 'sampleRate');
+  assertFiniteSamples(samples);
+  if (samples.length < 3) return { period: 0, frequency: 0, confidence: 0 };
   const minLag = options.minLag ?? 2;
   const maxLag = options.maxLag ?? Math.floor(samples.length / 2);
+  assertInteger(minLag, 'minLag');
+  assertInteger(maxLag, 'maxLag');
+  assertInRange(minLag, 1, samples.length - 1, 'minLag');
+  assertInRange(maxLag, 1, samples.length - 1, 'maxLag');
   assertNonNegative(minLag, 'minLag');
   assertPositive(maxLag, 'maxLag');
   if (minLag >= maxLag) {

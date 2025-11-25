@@ -30,3 +30,8 @@ describe('autocorrelation', () => {
     expect(r.confidence).toBe(0);
   });
 });
+it('handles empty pitch input and rejects excessive correlation work', () => {
+  expect(estimatePitch([], 8000)).toEqual({ period: 0, frequency: 0, confidence: 0 });
+  expect(() => autocorrelation(new Float32Array(8193))).toThrow();
+  expect(() => estimatePitch([1, 2, 3, 4], 8000, { minLag: 1.5 })).toThrow();
+});
