@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   PADDING_MODES,
+  ensureLength,
   padConstant,
   padEdge,
   padReflect,
