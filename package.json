@@ -44,7 +44,9 @@
     "lint": "tsc -p tsconfig.build.json --noEmit",
     "demo:build": "npm run build && node scripts/build-demo.mjs",
     "demo:serve": "node scripts/serve-demo.mjs",
-    "demo": "npm run demo:build && npm run demo:serve"
+    "demo": "npm run demo:build && npm run demo:serve",
+    "test:types": "tsc -p tsconfig.test.json",
+    "test:all": "npm run test:types && npm test -- --reporter=dot"
   },
   "keywords": [
     "audio",
