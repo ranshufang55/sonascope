@@ -64,3 +64,15 @@ describe('downmix', () => {
     expect(out.numChannels).toBe(1);
   });
 });
+it('enforces channel requirements and policy names independently of sample count', () => {
+  for (const length of [0, 4]) {
+    const audio = new AudioBuffer(8000, 1, length);
+    expect(() => downmixToMono(audio, 'bad' as never)).toThrow();
+    for (const policy of ['right', 'mid', 'side'] as const)
+      expect(() => downmixToMono(audio, policy)).toThrow();
+  }
+  const audio = new AudioBuffer(8000, 1, 1);
+  audio.getChannel(0)[0] = NaN;
+  expect(() => downmixToMono(audio)).toThrow();
+  expect(() => toMono(audio)).toThrow();
+});

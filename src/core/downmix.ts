@@ -1,3 +1,4 @@
+import { assertFiniteSamples } from './validation.js';
 // Downmix policies and helpers. The library collapses multi-channel
 // audio to mono in a few well-defined ways. Picking a policy is the
 // caller's responsibility — we never silently choose.
@@ -17,6 +18,10 @@ export function isDownmixPolicy(value: string): value is DownmixPolicy {
 }
 
 export function downmixToMono(buffer: AudioBuffer, policy: DownmixPolicy = 'average'): AudioBuffer {
+  if (!isDownmixPolicy(policy)) throw new RangeError('Unknown downmix policy');
+  if (['right', 'mid', 'side'].includes(policy) && buffer.numChannels < 2)
+    throw new RangeError('Downmix policy requires at least two channels');
+  for (const channel of buffer.data) assertFiniteSamples(channel);
   const n = buffer.numSamples;
   const out = new AudioBuffer(buffer.sampleRate, 1, n);
   const dst = out.getChannel(0);
@@ -67,6 +72,7 @@ export function downmixToMono(buffer: AudioBuffer, policy: DownmixPolicy = 'aver
 }
 
 export function toMono(buffer: AudioBuffer): AudioBuffer {
+  for (const channel of buffer.data) assertFiniteSamples(channel);
   if (buffer.numChannels === 1) return buffer;
   return downmixToMono(buffer, 'average');
 }
