@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { StreamingAnalyzer } from './streaming.js';
-import { generateSine } from './generators.js';
 import { frameSignal } from './frame.js';
 
 describe('streaming analyzer', () => {
