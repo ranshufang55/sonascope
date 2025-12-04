@@ -39,7 +39,7 @@ export function zeroCrossingRate(samples: ArrayLike<number>, sampleRate: number)
   for (let i = 1; i < samples.length; i++) {
     const a = samples[i - 1] ?? 0;
     const b = samples[i] ?? 0;
-    if ((a <= 0 && b > 0) || (a >= 0 && b < 0)) zc++;
+    if (a >= 0 !== b >= 0) zc++;
   }
   return (zc * sampleRate) / (samples.length - 1);
 }
