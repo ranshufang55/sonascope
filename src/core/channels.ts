@@ -16,6 +16,8 @@ export function joinChannels(buffers: AudioBuffer[]): AudioBuffer {
   if (buffers.length === 0) {
     throw new RangeError('joinChannels: at least one channel is required');
   }
+  for (const buffer of buffers)
+    if (buffer.numChannels !== 1) throw new RangeError('joinChannels requires mono inputs');
   const first = buffers[0];
   if (!first) throw new RangeError('joinChannels: missing first channel');
   const sampleRate = first.sampleRate;

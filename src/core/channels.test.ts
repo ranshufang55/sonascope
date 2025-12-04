@@ -63,3 +63,7 @@ describe('channels', () => {
     expect(stereo.getChannel(0)[0]).toBe(1);
   });
 });
+it('rejects multichannel join inputs at both empty and populated boundaries', () => {
+  for (const length of [0, 3])
+    expect(() => joinChannels([new AudioBuffer(8000, 2, length)])).toThrow();
+});
