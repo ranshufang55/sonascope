@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   SUPPORTED_SAMPLE_RATES,
+  assertSampleRate,
   frameCount,
   isSupportedSampleRate,
   millisecondsToSamples,
@@ -54,7 +55,7 @@ describe('sample-rate conversions', () => {
   });
 
   it('rejects oversized sample rates', () => {
-    expect(() => secondsToSamples(1, 10_000_000)).toThrow(/<= 192000/);
+    expect(() => secondsToSamples(1, 10_000_000)).toThrow(/192000/);
   });
 
   it('rejects negative milliseconds', () => {
@@ -64,4 +65,8 @@ describe('sample-rate conversions', () => {
   it('secondsToSamples allows fractional durations', () => {
     expect(secondsToSamples(0.5, 48000)).toBe(24000);
   });
+});
+it('accepts fractional physical rates and rejects sub-hertz sample clocks', () => {
+  expect(() => assertSampleRate(8000.5)).not.toThrow();
+  for (const rate of [0.1, 0.5, Number.MIN_VALUE]) expect(() => assertSampleRate(rate)).toThrow();
 });

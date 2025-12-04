@@ -30,8 +30,8 @@ export function isSupportedSampleRate(rate: number): boolean {
 export function assertSampleRate(rate: number): void {
   assertFinite(rate, 'sampleRate');
   assertPositive(rate, 'sampleRate');
-  if (rate > MAX_SAMPLE_RATE) {
-    throw new RangeError(`sampleRate must be <= ${MAX_SAMPLE_RATE}, got ${rate}`);
+  if (rate < 1 || rate > MAX_SAMPLE_RATE) {
+    throw new RangeError(`sampleRate must be in [1, ${MAX_SAMPLE_RATE}], got ${rate}`);
   }
 }
 
