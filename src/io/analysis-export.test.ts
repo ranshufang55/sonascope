@@ -85,3 +85,11 @@ it('rejects inconsistent spectral shapes in both serialization formats', async (
     expect(() => exporter(input)).toThrow();
   }
 });
+it('round-trips fractional sample clocks without imposing WAVE integer metadata rules', () => {
+  const analysis = analyzeAudio(new AudioBuffer(8000.5, 1, 4), {
+    fftSize: 4,
+    hopSize: 4,
+    window: 'rectangular',
+  });
+  expect(JSON.parse(serializeAnalysis(analysis)).sampleRate).toBe(8000.5);
+});

@@ -85,7 +85,6 @@ export function analysisToCsv(analysis: AudioAnalysis): string {
 export function validateAnalysis(analysis: AudioAnalysis): void {
   if (analysis.schemaVersion !== 1) throw new RangeError('Unsupported analysis schema');
   assertInRange(analysis.sampleRate, 1, 192000, 'sampleRate');
-  assertInteger(analysis.sampleRate, 'sampleRate');
   assertInteger(analysis.channels, 'channels');
   assertInRange(analysis.channels, 1, 32, 'channels');
   assertInteger(analysis.numSamples, 'numSamples');
