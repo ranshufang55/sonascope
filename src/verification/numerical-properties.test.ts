@@ -31,3 +31,28 @@ it('compare FFT bins with an independent direct Fourier sum', () => {
     near(actual.im, im);
   }
 });
+
+it('verify both complex planes against a direct Fourier transform', () => {
+  for (const n of sizes) {
+    const re = signal(n),
+      im = Float32Array.from(re, (v) => v * 0.5 + 0.1),
+      inputRe = re.slice(),
+      inputIm = im.slice();
+    c.fftInPlace(re, im);
+    const expectedRe: number[] = [],
+      expectedIm: number[] = [];
+    for (let k = 0; k < n; k++) {
+      let a = 0,
+        b = 0;
+      for (let t = 0; t < n; t++) {
+        const angle = (-2 * Math.PI * k * t) / n;
+        a += inputRe[t]! * Math.cos(angle) - inputIm[t]! * Math.sin(angle);
+        b += inputRe[t]! * Math.sin(angle) + inputIm[t]! * Math.cos(angle);
+      }
+      expectedRe.push(a);
+      expectedIm.push(b);
+    }
+    near(re, expectedRe);
+    near(im, expectedIm);
+  }
+});
