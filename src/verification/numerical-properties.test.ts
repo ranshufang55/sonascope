@@ -56,3 +56,13 @@ it('verify both complex planes against a direct Fourier transform', () => {
     near(im, expectedIm);
   }
 });
+
+it('preserve energy under the Fourier normalization convention', () => {
+  for (const n of sizes) {
+    const input = signal(n),
+      spectrum = c.fft(input);
+    const energy =
+      Array.from(spectrum.re).reduce((sum, re, i) => sum + re * re + spectrum.im[i]! ** 2, 0) / n;
+    expect(energy).toBeCloseTo(c.energy(input), 5);
+  }
+});
