@@ -77,3 +77,22 @@ it('retain Hermitian symmetry for every real input transform', () => {
     }
   }
 });
+
+it('preserve Fourier linearity for independent input signals', () => {
+  for (const n of sizes) {
+    const a = signal(n),
+      b = Float32Array.from({ length: n }, (_, i) => Math.cos(i * 0.47)),
+      sum = Float32Array.from(a, (v, i) => v + b[i]!);
+    const actual = c.fft(sum),
+      left = c.fft(a),
+      right = c.fft(b);
+    near(
+      actual.re,
+      Array.from(left.re, (v, i) => v + right.re[i]!),
+    );
+    near(
+      actual.im,
+      Array.from(left.im, (v, i) => v + right.im[i]!),
+    );
+  }
+});
