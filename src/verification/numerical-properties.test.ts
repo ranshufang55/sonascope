@@ -66,3 +66,14 @@ it('preserve energy under the Fourier normalization convention', () => {
     expect(energy).toBeCloseTo(c.energy(input), 5);
   }
 });
+
+it('retain Hermitian symmetry for every real input transform', () => {
+  for (const n of sizes) {
+    const spectrum = c.fft(signal(n));
+    expect(spectrum.im[0]).toBeCloseTo(0, 6);
+    for (let k = 1; k < n; k++) {
+      expect(spectrum.re[k]).toBeCloseTo(spectrum.re[n - k]!, 5);
+      expect(spectrum.im[k]).toBeCloseTo(-spectrum.im[n - k]!, 5);
+    }
+  }
+});
