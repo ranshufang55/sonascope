@@ -16,6 +16,7 @@ export async function loadAudioFile(file: File): Promise<AudioBuffer> {
   else {
     if (typeof OfflineAudioContext !== 'function')
       throw new Error('This browser cannot decode compressed audio; try a WAV file');
+    await mediaDuration(file);
     const context = new OfflineAudioContext(1, 1, 48000);
     const decoded = await context.decodeAudioData(bytes);
     if (decoded.duration > 30) throw new RangeError('Choose a recording of 30 seconds or less');
@@ -29,4 +30,38 @@ export async function loadAudioFile(file: File): Promise<AudioBuffer> {
   if (audio.numSamples === 0) throw new RangeError('This recording is empty');
   if (audio.getDuration() > 30) throw new RangeError('Choose a recording of 30 seconds or less');
   return audio;
+}
+
+/** Inspect container duration before allocating fully decoded compressed audio. */
+async function mediaDuration(file: File): Promise<number> {
+  if (typeof Audio !== 'function') throw new Error('Compressed audio decoding needs a browser');
+  return new Promise((resolve, reject) => {
+    const media = new Audio(),
+      url = URL.createObjectURL(file);
+    const cleanup = () => {
+      clearTimeout(timer);
+      media.onloadedmetadata = null;
+      media.onerror = null;
+      media.removeAttribute('src');
+      media.load();
+      URL.revokeObjectURL(url);
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Audio metadata timed out; try a WAV file'));
+    }, 10000);
+    media.preload = 'metadata';
+    media.onloadedmetadata = () => {
+      const duration = media.duration;
+      cleanup();
+      if (!Number.isFinite(duration) || duration <= 0 || duration > 30)
+        reject(new RangeError('Choose a nonempty recording of 30 seconds or less'));
+      else resolve(duration);
+    };
+    media.onerror = () => {
+      cleanup();
+      reject(new Error('This audio format could not be decoded; try a WAV file'));
+    };
+    media.src = url;
+  });
 }
