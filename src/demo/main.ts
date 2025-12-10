@@ -234,6 +234,7 @@ function updateTransport(): void {
     'pan-left',
     'pan-right',
     'reset-view',
+    'analysis-frame',
   ])
     (element(id) as HTMLButtonElement | HTMLSelectElement).disabled =
       session.state === 'microphone';
@@ -271,6 +272,7 @@ window.addEventListener('pagehide', () => {
 });
 
 let liveFrames: Float32Array[] = [];
+let liveTimes: number[] = [];
 let lastPaint = 0;
 function paintLive(time: number): void {
   if (session.state === 'closed') return;
@@ -289,7 +291,11 @@ function paintLive(time: number): void {
         const input = session.readTimeDomain();
         drawWaveform(wave, input, canvasSize(wave));
         liveFrames.push(bins);
-        if (liveFrames.length > 128) liveFrames.shift();
+        liveTimes.push(time);
+        if (liveFrames.length > 128) {
+          liveFrames.shift();
+          liveTimes.shift();
+        }
         drawSpectrogram(spectrogram, liveFrames, {
           ...canvasSize(spectrogram),
           floor: Number(select('db-floor')),
@@ -298,7 +304,10 @@ function paintLive(time: number): void {
         });
         setText('rms', `${linToDb(rms(input)).toFixed(1)} dB`);
         setText('frame-count', `${liveFrames.length} live frames`);
-        setText('spectrogram-end', `${(liveFrames.length / 10).toFixed(1)} s history`);
+        setText(
+          'spectrogram-end',
+          `${((time - (liveTimes[0] ?? time)) / 1000).toFixed(1)} s history`,
+        );
       }
     } else {
       setText('spectrum-mode', `FRAME ${frameIndex + 1}`);
@@ -322,6 +331,7 @@ element('microphone').addEventListener('click', async () => {
     await session.microphone();
     if (!['microphone'].includes(session.state)) return;
     liveFrames = [];
+    liveTimes = [];
     setText('source-title', 'Live microphone');
     setText('duration', 'Live');
     setText('centroid', '—');
