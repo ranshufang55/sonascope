@@ -96,3 +96,21 @@ it('preserve Fourier linearity for independent input signals', () => {
     );
   }
 });
+
+it('scale both Fourier planes by real signal gain', () => {
+  for (const n of sizes) {
+    const input = signal(n),
+      base = c.fft(input);
+    for (const gain of [-2, 0, 0.25]) {
+      const result = c.fft(Float32Array.from(input, (v) => v * gain));
+      near(
+        result.re,
+        Array.from(base.re, (v) => v * gain),
+      );
+      near(
+        result.im,
+        Array.from(base.im, (v) => v * gain),
+      );
+    }
+  }
+});
