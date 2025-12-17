@@ -114,3 +114,21 @@ it('scale both Fourier planes by real signal gain', () => {
     }
   }
 });
+
+it('match phase rotation after circular time shifts', () => {
+  for (const n of [4, 8, 16, 32])
+    for (const shift of [1, 2, n - 1]) {
+      const input = signal(n),
+        base = c.fft(input),
+        shifted = c.fft(Float32Array.from({ length: n }, (_, i) => input[(i - shift + n) % n]!));
+      const re: number[] = [],
+        im: number[] = [];
+      for (let k = 0; k < n; k++) {
+        const angle = (-2 * Math.PI * k * shift) / n;
+        re.push(base.re[k]! * Math.cos(angle) - base.im[k]! * Math.sin(angle));
+        im.push(base.re[k]! * Math.sin(angle) + base.im[k]! * Math.cos(angle));
+      }
+      near(shifted.re, re);
+      near(shifted.im, im);
+    }
+});
