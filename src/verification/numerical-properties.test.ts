@@ -132,3 +132,16 @@ it('match phase rotation after circular time shifts', () => {
       near(shifted.im, im);
     }
 });
+
+it('conjugate Fourier bins under circular time reversal', () => {
+  for (const n of sizes) {
+    const input = signal(n),
+      base = c.fft(input),
+      reversed = c.fft(Float32Array.from({ length: n }, (_, i) => input[(n - i) % n]!));
+    near(reversed.re, base.re);
+    near(
+      reversed.im,
+      Array.from(base.im, (v) => -v),
+    );
+  }
+});
