@@ -161,3 +161,11 @@ it('match circular convolution through Fourier multiplication', () => {
     near(result, expected);
   }
 });
+
+it('place constant signals exclusively in the DC bin', () => {
+  for (const n of sizes) {
+    const spectrum = c.fft(new Float32Array(n).fill(0.25));
+    near(spectrum.re, [n * 0.25, ...new Array(n - 1).fill(0)]);
+    near(spectrum.im, new Float32Array(n));
+  }
+});
