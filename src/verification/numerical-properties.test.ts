@@ -145,3 +145,19 @@ it('conjugate Fourier bins under circular time reversal', () => {
     );
   }
 });
+
+it('match circular convolution through Fourier multiplication', () => {
+  for (const n of [2, 4, 8, 16, 32]) {
+    const a = signal(n),
+      b = Float32Array.from(a, (v, i) => v * (i % 2 ? 1 : -1)),
+      left = c.fft(a),
+      right = c.fft(b);
+    const re = Float32Array.from(left.re, (v, i) => v * right.re[i]! - left.im[i]! * right.im[i]!),
+      im = Float32Array.from(left.im, (v, i) => left.re[i]! * right.im[i]! + v * right.re[i]!);
+    const result = c.ifftReal({ re, im });
+    const expected = Float32Array.from({ length: n }, (_, i) =>
+      Array.from(a).reduce((sum, v, j) => sum + v * b[(i - j + n) % n]!, 0),
+    );
+    near(result, expected);
+  }
+});
