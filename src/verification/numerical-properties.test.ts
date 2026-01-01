@@ -180,3 +180,16 @@ it('isolate alternating samples at the Nyquist bin', () => {
     near(spectrum.im, new Float32Array(n));
   }
 });
+
+it('round-trip independent complex input planes', () => {
+  for (const n of sizes) {
+    const re = signal(n),
+      im = Float32Array.from(re, (v) => 0.2 - v),
+      beforeRe = re.slice(),
+      beforeIm = im.slice();
+    c.fftInPlace(re, im);
+    c.ifftInPlace(re, im);
+    near(re, beforeRe);
+    near(im, beforeIm);
+  }
+});
