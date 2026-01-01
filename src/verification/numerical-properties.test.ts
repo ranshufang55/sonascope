@@ -207,3 +207,16 @@ it('leave original input storage untouched through forward and inverse calls', (
     expect(spectrum.im).toEqual(im);
   }
 });
+
+it('confine in-place transforms to the supplied typed-array views', () => {
+  const storage = new Float32Array(24).fill(9),
+    re = storage.subarray(4, 12),
+    im = storage.subarray(12, 20);
+  re.set(signal(8));
+  im.fill(0);
+  c.fftInPlace(re, im);
+  c.ifftInPlace(re, im);
+  expect(storage.subarray(0, 4)).toEqual(new Float32Array(4).fill(9));
+  expect(storage.subarray(20)).toEqual(new Float32Array(4).fill(9));
+  near(re, signal(8));
+});
