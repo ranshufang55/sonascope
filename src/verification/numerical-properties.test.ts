@@ -169,3 +169,14 @@ it('place constant signals exclusively in the DC bin', () => {
     near(spectrum.im, new Float32Array(n));
   }
 });
+
+it('isolate alternating samples at the Nyquist bin', () => {
+  for (const n of [2, 4, 8, 16, 32, 64]) {
+    const input = Float32Array.from({ length: n }, (_, i) => (i % 2 ? -0.5 : 0.5)),
+      spectrum = c.fft(input);
+    const expected = new Float32Array(n);
+    expected[n / 2] = n * 0.5;
+    near(spectrum.re, expected);
+    near(spectrum.im, new Float32Array(n));
+  }
+});
