@@ -193,3 +193,17 @@ it('round-trip independent complex input planes', () => {
     near(im, beforeIm);
   }
 });
+
+it('leave original input storage untouched through forward and inverse calls', () => {
+  for (const n of sizes) {
+    const input = signal(n),
+      before = input.slice(),
+      spectrum = c.fft(input),
+      re = spectrum.re.slice(),
+      im = spectrum.im.slice();
+    c.ifft(spectrum);
+    expect(input).toEqual(before);
+    expect(spectrum.re).toEqual(re);
+    expect(spectrum.im).toEqual(im);
+  }
+});
