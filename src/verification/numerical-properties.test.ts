@@ -230,3 +230,16 @@ it('keep magnitudes unchanged under complex phase rotation', () => {
   };
   near(c.magnitude(rotated), c.magnitude(input));
 });
+
+it('agree on power and squared magnitude across every Fourier bin', () => {
+  for (const n of sizes) {
+    const bins = c.fft(signal(n)),
+      power = c.powerSpectrum(bins),
+      magnitude = c.magnitude(bins);
+    near(
+      power,
+      Array.from(magnitude, (v) => v * v),
+      2e-5,
+    );
+  }
+});
