@@ -220,3 +220,13 @@ it('confine in-place transforms to the supplied typed-array views', () => {
   expect(storage.subarray(20)).toEqual(new Float32Array(4).fill(9));
   near(re, signal(8));
 });
+
+it('keep magnitudes unchanged under complex phase rotation', () => {
+  const input = c.fft(signal(32)),
+    angle = 0.73;
+  const rotated = {
+    re: Float32Array.from(input.re, (v, i) => v * Math.cos(angle) - input.im[i]! * Math.sin(angle)),
+    im: Float32Array.from(input.im, (v, i) => input.re[i]! * Math.sin(angle) + v * Math.cos(angle)),
+  };
+  near(c.magnitude(rotated), c.magnitude(input));
+});
