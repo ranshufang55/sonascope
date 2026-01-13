@@ -243,3 +243,16 @@ it('agree on power and squared magnitude across every Fourier bin', () => {
     );
   }
 });
+
+it('recover real-signal energy from DC, Nyquist and paired interior bins', () => {
+  for (const n of [2, 4, 8, 16, 32, 64]) {
+    const samples = signal(n),
+      powers = c.halfSpectrum(c.powerSpectrum(c.fft(samples)));
+    const energy =
+      (powers[0]! +
+        powers[n / 2]! +
+        2 * Array.from(powers.slice(1, -1)).reduce((a, b) => a + b, 0)) /
+      n;
+    expect(energy).toBeCloseTo(c.energy(samples), 5);
+  }
+});
