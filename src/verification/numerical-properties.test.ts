@@ -256,3 +256,8 @@ it('recover real-signal energy from DC, Nyquist and paired interior bins', () =>
     expect(energy).toBeCloseTo(c.energy(samples), 5);
   }
 });
+
+it('add twenty decibels when amplitude grows by a factor of ten', () => {
+  for (const amplitude of [0.001, 0.01, 0.1, 1, 10])
+    expect(c.linToDb(amplitude * 10) - c.linToDb(amplitude)).toBeCloseTo(20, 8);
+});
