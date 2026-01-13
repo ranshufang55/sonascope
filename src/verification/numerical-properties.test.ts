@@ -261,3 +261,8 @@ it('add twenty decibels when amplitude grows by a factor of ten', () => {
   for (const amplitude of [0.001, 0.01, 0.1, 1, 10])
     expect(c.linToDb(amplitude * 10) - c.linToDb(amplitude)).toBeCloseTo(20, 8);
 });
+
+it('add ten decibels when power grows by a factor of ten', () => {
+  for (const power of [0.001, 0.01, 0.1, 1, 10])
+    expect(c.toDbPower([power * 10])[0]! - c.toDbPower([power])[0]!).toBeCloseTo(10, 5);
+});
