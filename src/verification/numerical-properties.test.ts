@@ -266,3 +266,13 @@ it('add ten decibels when power grows by a factor of ten', () => {
   for (const power of [0.001, 0.01, 0.1, 1, 10])
     expect(c.toDbPower([power * 10])[0]! - c.toDbPower([power])[0]!).toBeCloseTo(10, 5);
 });
+
+it('return independent one-sided spectrum storage', () => {
+  const spectrum = Float32Array.from({ length: 16 }, (_, i) => i),
+    half = c.halfSpectrum(spectrum);
+  half[0] = 999;
+  expect(spectrum[0]).toBe(0);
+  spectrum[1] = 888;
+  expect(half[1]).toBe(1);
+  expect(half).toHaveLength(9);
+});
