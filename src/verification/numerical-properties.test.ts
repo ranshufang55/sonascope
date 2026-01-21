@@ -276,3 +276,16 @@ it('return independent one-sided spectrum storage', () => {
   expect(half[1]).toBe(1);
   expect(half).toHaveLength(9);
 });
+
+it('keep spectral centroid invariant under uniform magnitude gain', () => {
+  const values = [0, 1, 2, 4, 2, 1, 0];
+  const base = c.spectralCentroid(values, 16, 8000);
+  for (const gain of [1e-20, 0.1, 10, 1e20])
+    expect(
+      c.spectralCentroid(
+        values.map((v) => v * gain),
+        16,
+        8000,
+      ),
+    ).toBeCloseTo(base, 6);
+});
