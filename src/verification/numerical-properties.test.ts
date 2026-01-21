@@ -289,3 +289,12 @@ it('keep spectral centroid invariant under uniform magnitude gain', () => {
       ),
     ).toBeCloseTo(base, 6);
 });
+
+it('translate centroid by the exact frequency-bin displacement', () => {
+  const values = [1, 3, 2, 4],
+    shifted = [0, 0, ...values];
+  expect(c.spectralCentroid(shifted, 16, 8000) - c.spectralCentroid(values, 16, 8000)).toBeCloseTo(
+    1000,
+    8,
+  );
+});
