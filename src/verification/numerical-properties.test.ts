@@ -338,3 +338,11 @@ it('preserve entropy under gain and bin permutation', () => {
   expect(c.spectralEntropy(values.slice().reverse())).toBeCloseTo(entropy, 10);
   expect(c.spectralEntropy(values.map((v) => v * 0.001))).toBeCloseTo(entropy, 10);
 });
+
+it('count increasing spectral energy without penalizing decays', () => {
+  const quiet = [0, 1, 2],
+    loud = [1, 3, 5];
+  expect(c.spectralFlux(loud, quiet)).toBeCloseTo(Math.sqrt(14), 8);
+  expect(c.spectralFlux(quiet, loud)).toBe(0);
+  expect(c.spectralFlux(loud, loud)).toBe(0);
+});
