@@ -298,3 +298,9 @@ it('translate centroid by the exact frequency-bin displacement', () => {
     8,
   );
 });
+
+it('retain spectral spread under frequency-bin translation', () => {
+  const values = [1, 3, 2, 4],
+    shifted = [0, 0, ...values];
+  expect(c.spectralSpread(shifted, 16, 8000)).toBeCloseTo(c.spectralSpread(values, 16, 8000), 8);
+});
