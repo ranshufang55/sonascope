@@ -316,3 +316,10 @@ it('keep spectral spread independent of signal amplitude', () => {
       ),
     ).toBeCloseTo(c.spectralSpread(values, 16, 8000), 8);
 });
+
+it('move rolloff monotonically as the retained energy threshold grows', () => {
+  const values = [0, 1, 2, 3, 4, 0],
+    rolloffs = Array.from({ length: 21 }, (_, i) => c.spectralRolloff(values, 16, 8000, i / 20));
+  expect(rolloffs.every((value, i) => i === 0 || value >= rolloffs[i - 1]!)).toBe(true);
+  expect(rolloffs.at(-1)).toBe(2000);
+});
