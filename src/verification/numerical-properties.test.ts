@@ -331,3 +331,10 @@ it('reach maximum spectral entropy for uniform bins', () => {
       8,
     );
 });
+
+it('preserve entropy under gain and bin permutation', () => {
+  const values = [0, 1, 2, 3, 7];
+  const entropy = c.spectralEntropy(values);
+  expect(c.spectralEntropy(values.slice().reverse())).toBeCloseTo(entropy, 10);
+  expect(c.spectralEntropy(values.map((v) => v * 0.001))).toBeCloseTo(entropy, 10);
+});
