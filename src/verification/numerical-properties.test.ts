@@ -304,3 +304,15 @@ it('retain spectral spread under frequency-bin translation', () => {
     shifted = [0, 0, ...values];
   expect(c.spectralSpread(shifted, 16, 8000)).toBeCloseTo(c.spectralSpread(values, 16, 8000), 8);
 });
+
+it('keep spectral spread independent of signal amplitude', () => {
+  const values = [0, 1, 4, 2, 3];
+  for (const gain of [0.001, 0.1, 10])
+    expect(
+      c.spectralSpread(
+        values.map((v) => v * gain),
+        16,
+        8000,
+      ),
+    ).toBeCloseTo(c.spectralSpread(values, 16, 8000), 8);
+});
