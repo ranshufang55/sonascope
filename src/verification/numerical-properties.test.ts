@@ -323,3 +323,11 @@ it('move rolloff monotonically as the retained energy threshold grows', () => {
   expect(rolloffs.every((value, i) => i === 0 || value >= rolloffs[i - 1]!)).toBe(true);
   expect(rolloffs.at(-1)).toBe(2000);
 });
+
+it('reach maximum spectral entropy for uniform bins', () => {
+  for (const length of [1, 2, 4, 8, 16])
+    expect(c.spectralEntropy(new Float32Array(length).fill(0.25))).toBeCloseTo(
+      Math.log2(length),
+      8,
+    );
+});
