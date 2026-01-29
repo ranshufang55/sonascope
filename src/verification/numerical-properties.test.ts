@@ -372,3 +372,8 @@ it('keep every symmetric analysis window finite and mirrored', () => {
       near(window, window.slice().reverse(), 1e-7);
     }
 });
+
+it('match the closed-form Hann coherent gain', () => {
+  for (const length of [3, 4, 8, 16, 31, 64])
+    expect(c.windowSum(c.hann(length))).toBeCloseTo((length - 1) / 2, 5);
+});
