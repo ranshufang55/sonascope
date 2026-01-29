@@ -346,3 +346,13 @@ it('count increasing spectral energy without penalizing decays', () => {
   expect(c.spectralFlux(quiet, loud)).toBe(0);
   expect(c.spectralFlux(loud, loud)).toBe(0);
 });
+
+it('respect the geometric-to-arithmetic mean bound for positive spectra', () => {
+  for (let seed = 1; seed <= 20; seed++) {
+    const values = Array.from({ length: 17 }, (_, i) => 0.01 + ((i * seed * 17) % 31));
+    const flatness = c.spectralFlatness(values);
+    expect(flatness).toBeGreaterThan(0);
+    expect(flatness).toBeLessThanOrEqual(1);
+    expect(c.spectralFlatness(values.slice().reverse())).toBeCloseTo(flatness, 10);
+  }
+});
