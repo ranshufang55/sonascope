@@ -382,3 +382,12 @@ it('match the closed-form Hamming coherent gain', () => {
   for (const length of [3, 4, 8, 16, 31, 64])
     expect(c.windowSum(c.hamming(length))).toBeCloseTo(0.54 * length - 0.46, 5);
 });
+
+it('compose pointwise windows independently of application order', () => {
+  const input = signal(32),
+    a = c.hann(32),
+    b = c.hamming(32);
+  const left = c.applyWindow(c.applyWindow(input.slice(), a), b),
+    right = c.applyWindow(c.applyWindow(input.slice(), b), a);
+  near(left, right, 1e-7);
+});
