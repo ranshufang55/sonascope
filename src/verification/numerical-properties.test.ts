@@ -377,3 +377,8 @@ it('match the closed-form Hann coherent gain', () => {
   for (const length of [3, 4, 8, 16, 31, 64])
     expect(c.windowSum(c.hann(length))).toBeCloseTo((length - 1) / 2, 5);
 });
+
+it('match the closed-form Hamming coherent gain', () => {
+  for (const length of [3, 4, 8, 16, 31, 64])
+    expect(c.windowSum(c.hamming(length))).toBeCloseTo(0.54 * length - 0.46, 5);
+});
