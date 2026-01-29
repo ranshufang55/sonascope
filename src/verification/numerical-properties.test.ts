@@ -356,3 +356,19 @@ it('respect the geometric-to-arithmetic mean bound for positive spectra', () => 
     expect(c.spectralFlatness(values.slice().reverse())).toBeCloseTo(flatness, 10);
   }
 });
+
+it('keep every symmetric analysis window finite and mirrored', () => {
+  for (const name of [
+    'hann',
+    'hamming',
+    'blackman',
+    'rectangular',
+    'triangular',
+    'bartlett',
+  ] as const)
+    for (const length of [1, 2, 3, 4, 7, 16, 31]) {
+      const window = c.makeWindow(name, length);
+      expect(window.every(Number.isFinite)).toBe(true);
+      near(window, window.slice().reverse(), 1e-7);
+    }
+});
