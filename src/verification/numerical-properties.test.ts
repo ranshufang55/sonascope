@@ -400,3 +400,14 @@ it('reconstruct rectangular STFTs across overlapping and adjacent frames', () =>
       near(restored, input);
     }
 });
+
+it('reconstruct observable Hann-window samples throughout overlap regions', () => {
+  for (const size of [8, 16, 32])
+    for (const hop of [size / 4, size / 2]) {
+      const input = signal(size + 4 * hop),
+        restored = c.istft(c.stft(input, size, hop, 'hann'), size, hop, 'hann', input.length);
+      near(restored.subarray(1, -1), input.subarray(1, -1));
+      expect(restored[0]).toBe(0);
+      expect(restored.at(-1)).toBe(0);
+    }
+});
