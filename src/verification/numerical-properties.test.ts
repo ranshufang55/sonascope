@@ -391,3 +391,12 @@ it('compose pointwise windows independently of application order', () => {
     right = c.applyWindow(c.applyWindow(input.slice(), b), a);
   near(left, right, 1e-7);
 });
+
+it('reconstruct rectangular STFTs across overlapping and adjacent frames', () => {
+  for (const size of [4, 8, 16])
+    for (const hop of [1, size / 2, size]) {
+      const input = signal(size + 4 * hop),
+        restored = c.istft(c.stft(input, size, hop, null), size, hop, null, input.length);
+      near(restored, input);
+    }
+});
