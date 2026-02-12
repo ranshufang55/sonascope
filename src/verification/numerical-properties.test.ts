@@ -425,3 +425,15 @@ it('align STFT power and magnitude outputs frame by frame', () => {
       );
   }
 });
+
+it('preserve linearity through overlap-add synthesis', () => {
+  const a = [signal(8), signal(8)],
+    b = a.map((frame) => Float32Array.from(frame, (v) => v * 0.5 + 0.1));
+  const combined = a.map((frame, i) => Float32Array.from(frame, (v, j) => v + b[i]![j]!));
+  const left = c.overlapAdd(a, 8, 4),
+    right = c.overlapAdd(b, 8, 4);
+  near(
+    c.overlapAdd(combined, 8, 4),
+    Array.from(left, (v, i) => v + right[i]!),
+  );
+});
