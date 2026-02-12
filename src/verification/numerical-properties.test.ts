@@ -447,3 +447,10 @@ it('isolate overlapping frame arrays from one another and their source', () => {
   expect(frames[1]).toEqual(second);
   expect(input).toEqual(original);
 });
+
+it('keep RMS and total energy consistent at every sample length', () => {
+  for (const length of [0, 1, 2, 3, 17, 64]) {
+    const input = signal(length);
+    expect(c.rms(input) ** 2 * length).toBeCloseTo(c.energy(input), 8);
+  }
+});
