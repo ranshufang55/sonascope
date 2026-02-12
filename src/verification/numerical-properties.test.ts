@@ -411,3 +411,17 @@ it('reconstruct observable Hann-window samples throughout overlap regions', () =
       expect(restored.at(-1)).toBe(0);
     }
 });
+
+it('align STFT power and magnitude outputs frame by frame', () => {
+  for (const size of [4, 8, 16]) {
+    const input = signal(64),
+      magnitudes = c.stftMagnitude(input, size, size / 2),
+      power = c.stftPower(input, size, size / 2);
+    expect(power).toHaveLength(magnitudes.length);
+    for (let i = 0; i < power.length; i++)
+      near(
+        power[i]!,
+        Array.from(magnitudes[i]!, (v) => v * v),
+      );
+  }
+});
