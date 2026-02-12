@@ -437,3 +437,13 @@ it('preserve linearity through overlap-add synthesis', () => {
     Array.from(left, (v, i) => v + right[i]!),
   );
 });
+
+it('isolate overlapping frame arrays from one another and their source', () => {
+  const input = signal(16),
+    original = input.slice(),
+    frames = c.frameSignal(input, 8, { hopSize: 4 }),
+    second = frames[1]!.slice();
+  frames[0]![4] = 99;
+  expect(frames[1]).toEqual(second);
+  expect(input).toEqual(original);
+});
