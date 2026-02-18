@@ -469,3 +469,13 @@ it('scale variance by the square of signal gain', () => {
       8,
     );
 });
+
+it('bound nonzero crest factors between unity and the square root of length', () => {
+  for (const length of [1, 2, 4, 16, 64]) {
+    const input = signal(length),
+      crest = c.crestFactor(input);
+    expect(crest).toBeGreaterThanOrEqual(1 - 1e-10);
+    expect(crest).toBeLessThanOrEqual(Math.sqrt(length) + 1e-10);
+    expect(c.crestFactor(Float32Array.from(input, (v) => v * -2))).toBeCloseTo(crest, 6);
+  }
+});
