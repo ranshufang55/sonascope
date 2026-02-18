@@ -490,3 +490,10 @@ it('scale crossing rates with the sample clock while preserving counts', () => {
     ),
   ).toBe(c.zeroCrossingRate(samples, 8000));
 });
+
+it('make repeated mean removal numerically idempotent', () => {
+  const first = c.dcRemoveMean(signal(64)),
+    second = c.dcRemoveMean(first.slice());
+  expect(c.mean(first)).toBeCloseTo(0, 7);
+  near(first, second, 1e-7);
+});
