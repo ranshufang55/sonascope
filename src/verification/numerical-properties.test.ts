@@ -479,3 +479,14 @@ it('bound nonzero crest factors between unity and the square root of length', ()
     expect(c.crestFactor(Float32Array.from(input, (v) => v * -2))).toBeCloseTo(crest, 6);
   }
 });
+
+it('scale crossing rates with the sample clock while preserving counts', () => {
+  const samples = [-1, 1, -1, 1, 1, -1];
+  expect(c.zeroCrossingRate(samples, 16000)).toBe(2 * c.zeroCrossingRate(samples, 8000));
+  expect(
+    c.zeroCrossingRate(
+      samples.map((v) => v * 0.1),
+      8000,
+    ),
+  ).toBe(c.zeroCrossingRate(samples, 8000));
+});
