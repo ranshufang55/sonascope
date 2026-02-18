@@ -497,3 +497,11 @@ it('make repeated mean removal numerically idempotent', () => {
   expect(c.mean(first)).toBeCloseTo(0, 7);
   near(first, second, 1e-7);
 });
+
+it('recover samples after paired emphasis and de-emphasis', () => {
+  for (const coefficient of [0, 0.5, 0.9, 0.97]) {
+    const input = signal(128),
+      processed = c.preEmphasis(input.slice(), coefficient);
+    near(c.deEmphasis(processed, coefficient), input, 1e-6);
+  }
+});
