@@ -460,3 +460,12 @@ it('preserve variance under a constant DC translation', () => {
   for (const shift of [-10, 0.1, 10])
     expect(c.variance(values.map((v) => v + shift))).toBeCloseTo(c.variance(values), 9);
 });
+
+it('scale variance by the square of signal gain', () => {
+  const values = [-3, -1, 0, 2, 4];
+  for (const gain of [-2, 0, 0.25, 3])
+    expect(c.variance(values.map((v) => v * gain))).toBeCloseTo(
+      c.variance(values) * gain * gain,
+      8,
+    );
+});
