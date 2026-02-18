@@ -512,3 +512,13 @@ it('keep hard clipping idempotent and sign preserving', () => {
   expect(c.clipHard(once.slice(), 0.5)).toEqual(once);
   expect(once.every((v, i) => v === 0 || Math.sign(v) === Math.sign(input[i]!))).toBe(true);
 });
+
+it('keep soft clipping odd and bounded at large input levels', () => {
+  const positive = c.clipSoft(new Float32Array([0, 0.1, 1, 100]), 0.5),
+    negative = c.clipSoft(new Float32Array([0, -0.1, -1, -100]), 0.5);
+  near(
+    positive,
+    Array.from(negative, (v) => -v),
+  );
+  expect(positive.every((v) => v >= 0 && v <= 0.5)).toBe(true);
+});
