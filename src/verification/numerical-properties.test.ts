@@ -454,3 +454,9 @@ it('keep RMS and total energy consistent at every sample length', () => {
     expect(c.rms(input) ** 2 * length).toBeCloseTo(c.energy(input), 8);
   }
 });
+
+it('preserve variance under a constant DC translation', () => {
+  const values = [-3, -1, 0, 2, 4];
+  for (const shift of [-10, 0.1, 10])
+    expect(c.variance(values.map((v) => v + shift))).toBeCloseTo(c.variance(values), 9);
+});
