@@ -505,3 +505,10 @@ it('recover samples after paired emphasis and de-emphasis', () => {
     near(c.deEmphasis(processed, coefficient), input, 1e-6);
   }
 });
+
+it('keep hard clipping idempotent and sign preserving', () => {
+  const input = Float32Array.from([-2, -0.2, 0, 0.2, 2]),
+    once = c.clipHard(input.slice(), 0.5);
+  expect(c.clipHard(once.slice(), 0.5)).toEqual(once);
+  expect(once.every((v, i) => v === 0 || Math.sign(v) === Math.sign(input[i]!))).toBe(true);
+});
