@@ -522,3 +522,10 @@ it('keep soft clipping odd and bounded at large input levels', () => {
   );
   expect(positive.every((v) => v >= 0 && v <= 0.5)).toBe(true);
 });
+
+it('make spectrum means independent of frame order within numerical tolerance', () => {
+  const frames = Array.from({ length: 7 }, (_, i) =>
+    Float32Array.from(signal(16), (v) => v + i * 0.1),
+  );
+  near(c.meanSpectrum(frames), c.meanSpectrum(frames.slice().reverse()));
+});
