@@ -565,3 +565,19 @@ it('recover every channel after splitting and joining multichannel audio', () =>
       expect(joined.getChannel(channel)).toEqual(audio.getChannel(channel));
   }
 });
+
+it('recover stereo channels from mid and side components', () => {
+  const left = signal(16),
+    right = Float32Array.from(left, (v) => 0.2 - v),
+    audio = new c.AudioBuffer(8000, 2, 16, [left, right]),
+    mid = c.downmixToMono(audio, 'mid').getChannel(0),
+    side = c.downmixToMono(audio, 'side').getChannel(0);
+  near(
+    Array.from(mid, (v, i) => v + side[i]!),
+    left,
+  );
+  near(
+    Array.from(mid, (v, i) => v - side[i]!),
+    right,
+  );
+});
