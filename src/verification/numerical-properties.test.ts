@@ -581,3 +581,13 @@ it('recover stereo channels from mid and side components', () => {
     right,
   );
 });
+
+it('keep average downmix independent of channel ordering', () => {
+  const data = Array.from({ length: 4 }, (_, i) =>
+    Float32Array.from(signal(32), (v) => v * (i + 1)),
+  );
+  near(
+    c.downmixToMono(new c.AudioBuffer(8000, 4, 32, data)).getChannel(0),
+    c.downmixToMono(new c.AudioBuffer(8000, 4, 32, data.slice().reverse())).getChannel(0),
+  );
+});
