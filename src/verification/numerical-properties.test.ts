@@ -553,3 +553,15 @@ it('satisfy symmetry and the triangle inequality for spectral distance', () => {
   expect(c.spectrumL2(a, d)).toBeLessThanOrEqual(c.spectrumL2(a, b) + c.spectrumL2(b, d) + 1e-10);
   near(c.spectrumDiff(a, b), c.spectrumDiff(b, a));
 });
+
+it('recover every channel after splitting and joining multichannel audio', () => {
+  for (const channels of [1, 2, 4, 8]) {
+    const data = Array.from({ length: channels }, (_, i) =>
+        Float32Array.from(signal(16), (v) => v + i),
+      ),
+      audio = new c.AudioBuffer(8000, channels, 16, data),
+      joined = c.joinChannels(c.splitChannels(audio));
+    for (let channel = 0; channel < channels; channel++)
+      expect(joined.getChannel(channel)).toEqual(audio.getChannel(channel));
+  }
+});
