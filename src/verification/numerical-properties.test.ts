@@ -529,3 +529,9 @@ it('make spectrum means independent of frame order within numerical tolerance', 
   );
   near(c.meanSpectrum(frames), c.meanSpectrum(frames.slice().reverse()));
 });
+
+it('keep median spectra robust to one extreme outlier', () => {
+  const base = [new Float32Array([1, 2]), new Float32Array([1, 2]), new Float32Array([1e6, -1e6])];
+  expect(c.medianSpectrum(base)).toEqual(new Float32Array([1, 2]));
+  expect(c.medianSpectrum(base.slice().reverse())).toEqual(new Float32Array([1, 2]));
+});
