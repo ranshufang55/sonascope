@@ -543,3 +543,13 @@ it('never reduce held peaks when more frames arrive', () => {
   expect(after.every((v, i) => v >= before[i]!)).toBe(true);
   expect(Array.from(before)).toEqual([-3, -3, -1]);
 });
+
+it('satisfy symmetry and the triangle inequality for spectral distance', () => {
+  const a = signal(16),
+    b = Float32Array.from(a, (v) => v + 0.1),
+    d = Float32Array.from(a, (v) => -v);
+  expect(c.spectrumL2(a, b)).toBeCloseTo(c.spectrumL2(b, a), 10);
+  expect(c.spectrumL2(a, a)).toBe(0);
+  expect(c.spectrumL2(a, d)).toBeLessThanOrEqual(c.spectrumL2(a, b) + c.spectrumL2(b, d) + 1e-10);
+  near(c.spectrumDiff(a, b), c.spectrumDiff(b, a));
+});
