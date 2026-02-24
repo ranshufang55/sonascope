@@ -535,3 +535,11 @@ it('keep median spectra robust to one extreme outlier', () => {
   expect(c.medianSpectrum(base)).toEqual(new Float32Array([1, 2]));
   expect(c.medianSpectrum(base.slice().reverse())).toEqual(new Float32Array([1, 2]));
 });
+
+it('never reduce held peaks when more frames arrive', () => {
+  const frames = [new Float32Array([-4, -3, -2]), new Float32Array([-3, -4, -1])],
+    before = c.maxHoldSpectrum(frames),
+    after = c.maxHoldSpectrum([...frames, new Float32Array([-2, -2, -2])]);
+  expect(after.every((v, i) => v >= before[i]!)).toBe(true);
+  expect(Array.from(before)).toEqual([-3, -3, -1]);
+});
