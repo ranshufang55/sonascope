@@ -601,3 +601,14 @@ it('make compatible recording concatenation associative', () => {
     c.concatAudio([a, c.concatAudio([b, d])]).getChannel(0),
   );
 });
+
+it('commute reversal with uniform gain and symmetric fades', () => {
+  const audio = new c.AudioBuffer(8000, 1, 16, [signal(16)]);
+  expect(c.reverseAudio(c.gainAudio(audio, -2)).getChannel(0)).toEqual(
+    c.gainAudio(c.reverseAudio(audio), -2).getChannel(0),
+  );
+  near(
+    c.reverseAudio(c.fadeAudio(audio, 4, 4)).getChannel(0),
+    c.fadeAudio(c.reverseAudio(audio), 4, 4).getChannel(0),
+  );
+});
