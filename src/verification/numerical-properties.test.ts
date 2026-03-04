@@ -591,3 +591,13 @@ it('keep average downmix independent of channel ordering', () => {
     c.downmixToMono(new c.AudioBuffer(8000, 4, 32, data.slice().reverse())).getChannel(0),
   );
 });
+
+it('make compatible recording concatenation associative', () => {
+  const audio = new c.AudioBuffer(8000, 1, 16, [signal(16)]),
+    a = c.sliceAudio(audio, 0, 3),
+    b = c.sliceAudio(audio, 3, 9),
+    d = c.sliceAudio(audio, 9);
+  expect(c.concatAudio([c.concatAudio([a, b]), d]).getChannel(0)).toEqual(
+    c.concatAudio([a, c.concatAudio([b, d])]).getChannel(0),
+  );
+});
