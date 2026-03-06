@@ -612,3 +612,11 @@ it('commute reversal with uniform gain and symmetric fades', () => {
     c.fadeAudio(c.reverseAudio(audio), 4, 4).getChannel(0),
   );
 });
+
+it('keep mel conversion continuous and monotonic across the linear-log junction', () => {
+  const frequencies = [0, 100, 500, 999.999, 1000, 1000.001, 2000, 6400, 24000],
+    mels = frequencies.map(c.hzToMel);
+  expect(mels.every((v, i) => i === 0 || v > mels[i - 1]!)).toBe(true);
+  expect(c.hzToMel(1000.001) - c.hzToMel(999.999)).toBeLessThan(0.001);
+  near(mels.map(c.melToHz), frequencies, 1e-7);
+});
