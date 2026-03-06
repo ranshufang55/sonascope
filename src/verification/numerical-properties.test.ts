@@ -657,3 +657,12 @@ it('preserve linearity when integrating nonnegative power through mel filters', 
     Array.from(left, (v, i) => v + right[i]!),
   );
 });
+
+it('retain constant signals across all resampling modes and rate directions', () => {
+  for (const mode of ['nearest', 'linear', 'sinc'] as const)
+    for (const rate of [4000, 12000, 16000])
+      near(
+        c.resampleMono(new Float32Array(64).fill(0.25), 8000, rate, mode),
+        new Float32Array(Math.round((64 * rate) / 8000)).fill(0.25),
+      );
+});
