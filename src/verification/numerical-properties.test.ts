@@ -666,3 +666,20 @@ it('retain constant signals across all resampling modes and rate directions', ()
         new Float32Array(Math.round((64 * rate) / 8000)).fill(0.25),
       );
 });
+
+it('commute resampling with signal gain', () => {
+  const input = signal(64);
+  for (const mode of ['nearest', 'linear', 'sinc'] as const) {
+    const a = c.resampleMono(
+        Float32Array.from(input, (v) => v * -0.5),
+        8000,
+        12000,
+        mode,
+      ),
+      b = c.resampleMono(input, 8000, 12000, mode);
+    near(
+      a,
+      Array.from(b, (v) => v * -0.5),
+    );
+  }
+});
