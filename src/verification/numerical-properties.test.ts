@@ -620,3 +620,14 @@ it('keep mel conversion continuous and monotonic across the linear-log junction'
   expect(c.hzToMel(1000.001) - c.hzToMel(999.999)).toBeLessThan(0.001);
   near(mels.map(c.melToHz), frequencies, 1e-7);
 });
+
+it('maintain constant differences or ratios in linear and logarithmic band edges', () => {
+  for (const count of [1, 2, 4, 16]) {
+    const linear = c.linearBands(count, 100, 10000),
+      log = c.logBands(count, 100, 10000);
+    for (let i = 1; i <= count; i++) {
+      expect(linear[i]! - linear[i - 1]!).toBeCloseTo(9900 / count, 2);
+      expect(log[i]! / log[i - 1]!).toBeCloseTo(100 ** (1 / count), 4);
+    }
+  }
+});
