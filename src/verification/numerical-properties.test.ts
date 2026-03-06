@@ -691,3 +691,12 @@ it('preserve the original signal inside every padding mode', () => {
       for (const right of [0, 1, 20])
         expect(fn(input, left, right).subarray(left, left + input.length)).toEqual(input);
 });
+
+it('mirror reflection padding when signal and side widths reverse', () => {
+  const input = signal(7);
+  for (const left of [0, 1, 3, 20])
+    for (const right of [0, 2, 5, 19])
+      expect(c.padReflect(input, left, right)).toEqual(
+        c.padReflect(input.slice().reverse(), right, left).reverse(),
+      );
+});
