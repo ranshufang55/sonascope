@@ -683,3 +683,11 @@ it('commute resampling with signal gain', () => {
     );
   }
 });
+
+it('preserve the original signal inside every padding mode', () => {
+  const input = signal(17);
+  for (const fn of [c.padZero, c.padEdge, c.padReflect, c.padConstant])
+    for (const left of [0, 1, 20])
+      for (const right of [0, 1, 20])
+        expect(fn(input, left, right).subarray(left, left + input.length)).toEqual(input);
+});
