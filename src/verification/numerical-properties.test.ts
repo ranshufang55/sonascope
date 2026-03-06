@@ -642,3 +642,18 @@ it('keep mel filter weights bounded with ordered center frequencies', () => {
       expect(filter.every((v) => Number.isFinite(v) && v >= 0 && v <= 1)).toBe(true);
   }
 });
+
+it('preserve linearity when integrating nonnegative power through mel filters', () => {
+  const bank = c.melFilterbank(8, 64, 16000),
+    a = Float32Array.from({ length: 33 }, (_, i) => i / 33),
+    d = Float32Array.from(a, (v) => 1 - v),
+    left = c.applyMelFilterbank(a, bank),
+    right = c.applyMelFilterbank(d, bank);
+  near(
+    c.applyMelFilterbank(
+      Float32Array.from(a, (v, i) => v + d[i]!),
+      bank,
+    ),
+    Array.from(left, (v, i) => v + right[i]!),
+  );
+});
