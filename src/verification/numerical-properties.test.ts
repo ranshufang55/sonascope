@@ -631,3 +631,14 @@ it('maintain constant differences or ratios in linear and logarithmic band edges
     }
   }
 });
+
+it('keep mel filter weights bounded with ordered center frequencies', () => {
+  for (const count of [1, 4, 16, 32]) {
+    const bank = c.melFilterbank(count, 256, 16000);
+    expect(
+      bank.centerFrequencies.every((v, i) => i === 0 || v > bank.centerFrequencies[i - 1]!),
+    ).toBe(true);
+    for (const filter of bank.filters)
+      expect(filter.every((v) => Number.isFinite(v) && v >= 0 && v <= 1)).toBe(true);
+  }
+});
