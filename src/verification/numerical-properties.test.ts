@@ -714,3 +714,20 @@ it('make ring buffer state independent of push partitioning', () => {
     }
   }
 });
+
+it('produce identical streaming features for irregular chunk boundaries', () => {
+  const input = signal(89);
+  for (const hopSize of [1, 3, 8, 13]) {
+    const options = { sampleRate: 8000, frameSize: 8, hopSize },
+      whole = new c.StreamingAnalyzer(options).push(input),
+      analyzer = new c.StreamingAnalyzer(options);
+    const chunked: ReturnType<typeof analyzer.push> = [];
+    let offset = 0;
+    while (offset < input.length) {
+      const size = (offset % 7) + 1;
+      chunked.push(...analyzer.push(input.subarray(offset, offset + size)));
+      offset += size;
+    }
+    expect(chunked).toEqual(whole);
+  }
+});
