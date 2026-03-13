@@ -700,3 +700,17 @@ it('mirror reflection padding when signal and side widths reverse', () => {
         c.padReflect(input.slice().reverse(), right, left).reverse(),
       );
 });
+
+it('make ring buffer state independent of push partitioning', () => {
+  const input = signal(37);
+  for (const capacity of [1, 3, 8, 16]) {
+    const whole = new c.RingBuffer(capacity);
+    whole.pushMany(input);
+    for (let split = 0; split <= input.length; split++) {
+      const splitRing = new c.RingBuffer(capacity);
+      splitRing.pushMany(input.subarray(0, split));
+      splitRing.pushMany(input.subarray(split));
+      expect(splitRing.toArray()).toEqual(whole.toArray());
+    }
+  }
+});
