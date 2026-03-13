@@ -731,3 +731,11 @@ it('produce identical streaming features for irregular chunk boundaries', () => 
     expect(chunked).toEqual(whole);
   }
 });
+
+it('make a reset streaming analyzer behave like a fresh instance', () => {
+  const options = { sampleRate: 8000, frameSize: 8, hopSize: 3 },
+    analyzer = new c.StreamingAnalyzer(options);
+  analyzer.push(signal(17));
+  analyzer.reset();
+  expect(analyzer.push(signal(31))).toEqual(new c.StreamingAnalyzer(options).push(signal(31)));
+});
