@@ -746,3 +746,10 @@ it('keep normalized autocorrelation invariant under gain and phase inversion', (
   for (const gain of [-2, 0.25, 3])
     near(c.autocorrelation(Float32Array.from(input, (v) => v * gain)), base);
 });
+
+it('retain autocorrelation after reversing sample order', () => {
+  for (const length of [1, 2, 7, 16, 33]) {
+    const input = signal(length);
+    near(c.autocorrelation(input), c.autocorrelation(input.slice().reverse()));
+  }
+});
