@@ -753,3 +753,13 @@ it('retain autocorrelation after reversing sample order', () => {
     near(c.autocorrelation(input), c.autocorrelation(input.slice().reverse()));
   }
 });
+
+it('return maximal disjoint silent runs with exact sample coverage', () => {
+  const input = [0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+    runs = c.detectSilence(input, { threshold: 0.1 });
+  const silent = new Set(
+    runs.flatMap((run) => Array.from({ length: run.end - run.start }, (_, i) => run.start + i)),
+  );
+  expect([...silent]).toEqual([0, 1, 3, 5, 6, 7, 9]);
+  expect(runs.every((run, i) => i === 0 || run.start > runs[i - 1]!.end)).toBe(true);
+});
