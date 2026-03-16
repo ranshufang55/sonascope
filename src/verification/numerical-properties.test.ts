@@ -739,3 +739,10 @@ it('make a reset streaming analyzer behave like a fresh instance', () => {
   analyzer.reset();
   expect(analyzer.push(signal(31))).toEqual(new c.StreamingAnalyzer(options).push(signal(31)));
 });
+
+it('keep normalized autocorrelation invariant under gain and phase inversion', () => {
+  const input = signal(64),
+    base = c.autocorrelation(input);
+  for (const gain of [-2, 0.25, 3])
+    near(c.autocorrelation(Float32Array.from(input, (v) => v * gain)), base);
+});
