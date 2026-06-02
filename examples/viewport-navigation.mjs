@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { Viewport } from '../dist/browser/index.js';
+const viewport = new Viewport(48000);
+viewport.zoom(2, 0.5);
+const before = viewport.range;
+assert.ok(before.end - before.start <= 48000);
+viewport.pan(1e9);
+assert.ok(viewport.range.end <= 48000);
+viewport.reset();
+assert.equal(viewport.range.start, 0);
+assert.equal(viewport.range.end, 48000);
+console.log('Viewport reset:', viewport.range);
