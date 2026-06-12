@@ -1,6 +1,6 @@
 {
   "name": "sonascope",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A TypeScript audio analysis library and browser workbench.",
   "type": "module",
   "main": "./dist/index.js",
