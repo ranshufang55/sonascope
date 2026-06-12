@@ -46,7 +46,11 @@
     "demo:serve": "node scripts/serve-demo.mjs",
     "demo": "npm run demo:build && npm run demo:serve",
     "test:types": "tsc -p tsconfig.test.json",
-    "test:all": "npm run test:types && npm test -- --reporter=dot"
+    "test:all": "npm run test:types && npm test -- --reporter=dot",
+    "test:examples": "node scripts/check-examples.mjs",
+    "test:package": "node scripts/check-package.mjs",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "prepack": "npm run build"
   },
   "keywords": [
     "audio",
