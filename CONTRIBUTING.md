@@ -19,3 +19,7 @@ Format with `npm run format` when needed, then repeat the checks. Stage explicit
 Keep ESM imports explicit with `.js` suffixes, use named exports, strict TypeScript and single-quoted strings. Add behavior tests for a numerical change and cover both transformation directions. Public exports and serialized schemas have complete golden checks; update these intentionally when a contract changes.
 
 Run `node scripts/check-package.mjs` for packaging changes. Browser work should exercise playback, microphone release, frame selection, exports and narrow layouts. Use small synthetic reproductions instead of private recordings in issues.
+
+## Updating the API golden
+
+After reviewing an intentional public signature change, run `npm run build` and `node scripts/public-api.mjs > src/verification/public-declarations.json`, then format and run all checks again. The golden includes every emitted core, IO and browser declaration.
