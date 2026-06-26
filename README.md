@@ -2,6 +2,8 @@
 
 **Local audio analysis, visualized.** A dependency-free TypeScript DSP library and browser workbench by **Huang Zeyao**, a student at **Sun Yat-sen University**.
 
+![Sonascope workbench](docs/images/workbench.png)
+
 ## Explore audio
 
 ```sh
