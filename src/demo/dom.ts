@@ -25,6 +25,6 @@ export function canvasSize(canvas: HTMLCanvasElement): {
   return {
     width: Math.max(1, Math.min(2048, Math.round(rect.width))),
     height: Math.max(1, Math.min(1024, Math.round(rect.height))),
-    pixelRatio: Math.min(1.5, globalThis.devicePixelRatio || 1),
+    pixelRatio: Math.min(2, globalThis.devicePixelRatio || 1),
   };
 }
