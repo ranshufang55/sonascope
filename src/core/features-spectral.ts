@@ -83,15 +83,18 @@ export function spectralRolloff(
 export function spectralFlatness(magnitudes: ArrayLike<number>): number {
   assertSpectrum(magnitudes);
   if (magnitudes.length === 0) return 0;
+  // Epsilon floor prevents a single zero bin from collapsing the
+  // geometric mean to zero. 1e-20 is well below any meaningful
+  // spectral magnitude while keeping the log sum finite.
+  const epsilon = 1e-20;
   let logSum = 0;
   let arith = 0;
   for (let i = 0; i < magnitudes.length; i++) {
-    const v = magnitudes[i] ?? 0;
-    if (v === 0) return 0;
+    const v = Math.max(magnitudes[i] ?? 0, epsilon);
     logSum += Math.log(v);
     arith += v;
   }
-  if (arith === 0) return 0;
+  if (arith <= epsilon * magnitudes.length) return 0;
   const geo = Math.exp(logSum / magnitudes.length);
   return Math.min(1, geo / (arith / magnitudes.length));
 }
