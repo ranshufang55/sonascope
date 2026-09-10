@@ -70,11 +70,14 @@ export class StreamingAnalyzer {
         const frame = Object.freeze(this.analyse(this.buffer.toArray()));
         out.push(frame);
         this.frames.push(frame);
-        if (this.frames.length > this.retainFrames)
-          this.frames.splice(0, this.frames.length - this.retainFrames);
         this.nextFrameEnd += this.hopSize;
       }
     }
+    // Trim once after the loop rather than per-frame. When a large
+    // batch produces many frames, the old code ran splice (O(n))
+    // for each one; now it runs at most once.
+    if (this.frames.length > this.retainFrames)
+      this.frames.splice(0, this.frames.length - this.retainFrames);
     return out;
   }
 
