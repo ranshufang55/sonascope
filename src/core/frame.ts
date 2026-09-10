@@ -5,6 +5,7 @@ import { fft, ifft, ifftInPlace, fftInPlace, type ComplexArray } from './fft.js'
 import { applyWindow, makeWindow, type WindowType } from './window.js';
 import { frameCount } from './sample-rate.js';
 import { assertPositive, assertInteger, assertFiniteSamples, assertInRange } from './validation.js';
+import { magnitude, powerSpectrum, halfSpectrum } from './spectrum.js';
 
 export interface FrameOptions {
   hopSize: number;
@@ -133,13 +134,9 @@ export function stftMagnitude(
   hopSize: number,
   window: WindowType | null = 'hann',
 ): Float32Array[] {
-  return stft(samples, frameSize, hopSize, window).map((c) => {
-    const out = new Float32Array(c.re.length / 2 + 1);
-    for (let i = 0; i < out.length; i++) {
-      out[i] = Math.hypot(c.re[i] ?? 0, c.im[i] ?? 0);
-    }
-    return out;
-  });
+  return stft(samples, frameSize, hopSize, window).map((c) =>
+    halfSpectrum(magnitude(c)),
+  );
 }
 
 export function stftPower(
@@ -148,15 +145,9 @@ export function stftPower(
   hopSize: number,
   window: WindowType | null = 'hann',
 ): Float32Array[] {
-  return stft(samples, frameSize, hopSize, window).map((c) => {
-    const out = new Float32Array(c.re.length / 2 + 1);
-    for (let i = 0; i < out.length; i++) {
-      const re = c.re[i] ?? 0;
-      const im = c.im[i] ?? 0;
-      out[i] = re * re + im * im;
-    }
-    return out;
-  });
+  return stft(samples, frameSize, hopSize, window).map((c) =>
+    halfSpectrum(powerSpectrum(c)),
+  );
 }
 
 export { fftInPlace, ifftInPlace };
