@@ -88,11 +88,14 @@ export function fftInPlace(re: Float32Array, im: Float32Array): void {
   for (let size = 2; size <= n; size <<= 1) {
     const half = size >> 1;
     const angleStep = (-2 * Math.PI) / size;
+    // Precompute the twiddle rotation once per stage. This reduces
+    // trig calls from O(N log N) to O(log N) per transform.
+    const dRe = Math.cos(angleStep);
+    const dIm = Math.sin(angleStep);
     for (let i = 0; i < n; i += size) {
+      let wr = 1;
+      let wi = 0;
       for (let k = 0; k < half; k++) {
-        const angle = angleStep * k;
-        const wr = Math.cos(angle);
-        const wi = Math.sin(angle);
         const aRe = re[i + k] ?? 0;
         const aIm = im[i + k] ?? 0;
         const bRe = re[i + k + half] ?? 0;
@@ -103,6 +106,10 @@ export function fftInPlace(re: Float32Array, im: Float32Array): void {
         im[i + k] = aIm + tIm;
         re[i + k + half] = aRe - tRe;
         im[i + k + half] = aIm - tIm;
+        // Recursive twiddle rotation for the next k.
+        const nextWr = wr * dRe - wi * dIm;
+        wi = wr * dIm + wi * dRe;
+        wr = nextWr;
       }
     }
   }
