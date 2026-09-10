@@ -65,13 +65,13 @@ export function writeFloat32(view: DataView, offset: number, value: number): voi
 export function readFloat64(view: DataView, offset: number): number {
   assertByteRange(view, offset, 8);
   const value = view.getFloat64(offset, true);
-  if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value)))
+  if (!Number.isFinite(value))
     throw new RangeError('Unsupported non-finite audio sample');
   return value;
 }
 export function writeFloat64(view: DataView, offset: number, value: number): void {
   assertByteRange(view, offset, 8);
-  if (!Number.isFinite(value) || !Number.isFinite(Math.fround(value)))
+  if (!Number.isFinite(value))
     throw new RangeError('Unsupported non-finite audio sample');
   view.setFloat64(offset, value, true);
 }
