@@ -1,7 +1,6 @@
 // Frequency band helpers: linear, log, and mel.
 
 import {
-  assertPositive,
   assertNonNegative,
   assertInteger,
   assertInRange,
@@ -77,11 +76,8 @@ export function melFilterbank(
   assertNonNegative(minHz, 'minHz');
   if ((maxHz ?? sampleRate / 2) <= minHz || (maxHz ?? sampleRate / 2) > sampleRate / 2)
     throw new RangeError('Mel frequencies must lie in the Nyquist interval');
-  assertPositive(maxHz ?? sampleRate / 2, 'maxHz');
   if (numFilters * (Math.floor(fftSize / 2) + 1) > 2 ** 22)
     throw new RangeError('Filterbank exceeds cell limit');
-  assertPositive(fftSize, 'fftSize');
-  assertPositive(sampleRate, 'sampleRate');
   const nyq = maxHz ?? sampleRate / 2;
   const minMel = hzToMel(minHz);
   const maxMel = hzToMel(nyq);
