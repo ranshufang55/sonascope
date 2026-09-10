@@ -100,7 +100,12 @@ export function melFilterbank(
     centers[m] = center;
     const filter = Float32Array.from({ length: Math.floor(fftSize / 2) + 1 }, (_, bin) => {
       const hz = (bin * sampleRate) / fftSize;
-      return Math.max(0, Math.min((hz - left) / (center - left), (right - hz) / (right - center)));
+      const leftWidth = center - left;
+      const rightWidth = right - center;
+      if (leftWidth <= 0 || rightWidth <= 0) return 0;
+      const rising = (hz - left) / leftWidth;
+      const falling = (right - hz) / rightWidth;
+      return Math.max(0, Math.min(rising, falling));
     });
     filters.push(filter);
   }
